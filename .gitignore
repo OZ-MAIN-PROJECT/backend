@@ -12,9 +12,6 @@ staticfiles/
 
 # Python virtual environments
 venv/
-ENV/
-env/
-.venv/
 
 # VSCode settings
 .vscode/
@@ -25,4 +22,3 @@ env/
 # System files
 .DS_Store
 Thumbs.db
-
