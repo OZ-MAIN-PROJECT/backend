@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_yasg',
 
+#주석
     'accounts',
     'wallet',
     'stats',
