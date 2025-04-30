@@ -10,9 +10,9 @@ from rest_framework import permissions
 from django.conf import settings
 from django.conf.urls.static import static
 
-# ✅ BASE_DIR import 추가
 import os
-from config.settings.base import BASE_DIR  # ← 정확한 위치로 수정 필요
+from config.settings.base import BASE_DIR
+from django.views.generic import TemplateView
 
 # Swagger 세팅
 schema_view = get_schema_view(
@@ -40,5 +40,6 @@ urlpatterns = [
 
     # Swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path("swagger-editor/", TemplateView.as_view(template_name="swagger.html")),
 
 ] + static(settings.STATIC_URL, document_root=os.path.join(BASE_DIR, 'static'))

@@ -1,9 +1,7 @@
 from pathlib import Path
 import os
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
 
 SECRET_KEY = 'django-insecure-8zjl)bzv5vqgb04s-e=))l2_*nctad71t%$ko=od)w47gy%uz8'
 
@@ -44,7 +42,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # ✅ 여기에 추가됨
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,7 +79,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# 언어, 타임존 수정 (한국 기준)
 LANGUAGE_CODE = 'ko-kr'
 TIME_ZONE = 'Asia/Seoul'
 
@@ -96,14 +93,12 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# 추가: DRF 세팅
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 
-# 추가: Swagger 세팅
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'JSON_EDITOR': True,
