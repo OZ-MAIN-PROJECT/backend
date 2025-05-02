@@ -12,9 +12,40 @@ staticfiles/
 
 # Python virtual environments
 venv/
+<<<<<<<<< Temporary merge branch 1
+=========
 .env/
 .env
 .venv/
+>>>>>>>>> Temporary merge branch 2
+
+# VSCode settings
+.vscode/
+
+# PyCharm settings
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# Python virtual environments
+venv/
+.env/
+.env
+.venv/
+
 
 # VSCode settings
 .vscode/

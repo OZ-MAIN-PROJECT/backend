@@ -28,6 +28,10 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    #user.urls 테스트용으로 사용함
+    path('', include('users.urls')),
+
+
     # 각 앱 API 연결
     path('api/accounts/', include('accounts.urls')),
     path('api/wallet/', include('wallet.urls')),
@@ -42,5 +46,6 @@ urlpatterns = [
     # Swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path("swagger-editor/", TemplateView.as_view(template_name="swagger.html")),
+
 
 ] + static(settings.STATIC_URL, document_root=os.path.join(BASE_DIR, 'static'))
