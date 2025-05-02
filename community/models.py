@@ -31,7 +31,6 @@ class Community(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     like_count = models.PositiveIntegerField(default=0) # 좋아요 수
-    view_count = models.PositiveIntegerField(default=0) # 조회 수
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -60,21 +59,9 @@ class Comment(models.Model):
         return f"{self.user} : {self.content}"
 
 
-# 커뮤니티 통계
-class CommunityStatistics(models.Model):
-    community_statistics_id = models.AutoField(primary_key=True)
-    community = models.OneToOneField(Community, on_delete=models.CASCADE, related_name='statistics')
-    type = models.CharField(max_length=20, choices=Community.COMMUNITY_TYPE_CHOICES)
-    views = models.IntegerField(default=0)
-    saves = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'community_statistics'
-
-
 # 좋아요 기록
 class CommunityLike(models.Model):
+    like_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='likes')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -86,15 +73,16 @@ class CommunityLike(models.Model):
     def __str__(self):
         return f"{self.user} likes {self.community}"
     
-
 # 조회수 기록
-class CommunityViewLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE) # 로그인 유저만 허용
+class CommunityView(models.Model):
+    view_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     community = models.ForeignKey(Community, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    viewed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'community_view_log'
+        unique_togeter = ('user', 'community') # 중복으로 조회수 카운트 불가
+        db_table = 'community_view'
 
     def __str__(self):
-        return f"View: {self.community} by {self.user}"
+        return f"{self.user} viewed {self.community}"
