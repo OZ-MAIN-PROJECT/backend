@@ -31,7 +31,7 @@ urlpatterns = [
     # 각 앱 API 연결
     path('api/accounts/', include('accounts.urls')),
     path('api/wallet/', include('wallet.urls')),
-    path('api/stats/', include('stats.urls')),
+    path('api/wallet/statistic/', include('statistic.urls')),
     path('api/community/', include('community.urls')),
 
     # JWT
