@@ -3,9 +3,6 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class TypeChoices(models.TextChoices):
-    EXPENSE = 'Expense', '지출'
-    INCOME = 'Income', '수입'
 
 class EmotionChoices(models.TextChoices):
     HAPPY = 'happy', '행복'
@@ -16,6 +13,17 @@ class EmotionChoices(models.TextChoices):
     SATISFIED = 'satisfied', '만족'
     TIRED = 'tired', '지침'
     EXPECTED = 'expected', '기대'
+
+class WalletEmotion(models.Model):
+    wallet_emotion_type = models.CharField(max_length=60, primary_key=True)  # ex: 'happy'
+    wallet_emotion_id = models.PositiveIntegerField(unique=True)
+
+    class Meta:
+        db_table = 'wallet_emotion'
+
+    def __str__(self):
+        return self.emotion_type
+
 
 class WalletCategoryChoices(models.TextChoices):
     FOOD = 'food', '식비'
@@ -34,18 +42,39 @@ class WalletCategoryChoices(models.TextChoices):
     INVESTMENT = 'investment', '투자 수익'
     REFUND = 'refund', '환급'
 
+class WalletCategory(models.Model):
+    wallet_category_type = models.CharField(max_length=60, primary_key=True)  # ex: 'food'
+    wallet_category_id = models.PositiveIntegerField(unique=True)
+
+    class Meta:
+        db_table = 'wallet_category'
+
+    def __str__(self):
+        return self.wallet_category_type
+
+
 
 class Wallet(models.Model):
+    TYPE_CHOICES = [
+        ('Expense', '지출'),
+        ('Income', '수입'),
+    ]
+
+
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
-    type = models.CharField(max_length=10, choices=TypeChoices.choices)
+    type = models.CharField(max_length=40, choices=TYPE_CHOICES)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     balance = models.DecimalField(decimal_places=2, max_digits=10)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    wallet_category = models.CharField(max_length=30, choices=WalletCategoryChoices.choices)
-    emotion = models.CharField(max_length=20, choices=EmotionChoices.choices)
+    wallet_category = models.ForeignKey(WalletCategory, to_field='wallet_category_type', on_delete=models.PROTECT, null=False)
+    emotion = models.ForeignKey(WalletEmotion, to_field='wallet_emotion_type', on_delete=models.PROTECT, null=False)
     date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+
+    class Meta:
+        db_table = 'wallet'
