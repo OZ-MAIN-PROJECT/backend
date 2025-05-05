@@ -65,7 +65,6 @@ class Wallet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     type = models.CharField(max_length=40, choices=TYPE_CHOICES)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
-    balance = models.DecimalField(decimal_places=2, max_digits=10)
     title = models.CharField(max_length=255)
     content = models.TextField()
     wallet_category = models.ForeignKey(WalletCategory, to_field='wallet_category_type', on_delete=models.PROTECT, null=False)
