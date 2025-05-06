@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from users.models import User
 from wallet import services
-from wallet.serializers import WalletCreateSerializer
+from wallet.serializers import WalletCreateSerializer, WalletDetailSerializer
 
 #로그인이 안되서 유저 지정(테스트를 위해 나중에 지워야함)
 User = get_user_model()
@@ -32,3 +32,19 @@ class WalletCreateView(APIView):
 
 
         return Response({"walletUuid": wallet.wallet_uuid}, status=201)
+
+class WalletDetailView(APIView):
+    permission_classes = []
+
+    def get(self, request, wallet_uuid):
+        test_user = User.objects.first()
+
+        wallet = services.get_wallet_detail(
+            user = test_user,
+            wallet_uuid = wallet_uuid
+        )
+
+        serializer = WalletDetailSerializer(wallet)
+
+        return Response(serializer.data, status=200)
+

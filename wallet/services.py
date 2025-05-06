@@ -18,3 +18,12 @@ def create_wallet(user,data) :
     except Exception as e:
         print("💥 Wallet 생성 오류:", e)
         raise ValidationError({"detail": f"지갑 생성 실패: {str(e)}"})
+
+
+def get_wallet_detail(user, wallet_uuid):
+    try:
+        wallet = Wallet.objects.get(user=user, wallet_uuid=wallet_uuid)
+        return wallet
+    except Exception as e:
+        print("💥 Wallet 개별 조회 오류:", e)
+        raise ValidationError({"detail": f"지갑 조회 실패: {str(e)}"})
