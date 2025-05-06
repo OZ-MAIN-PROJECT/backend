@@ -17,7 +17,7 @@ def create_wallet(user,data) :
         )
     except Exception as e:
         print("💥 Wallet 생성 오류:", e)
-        raise ValidationError({"detail": f"지갑 생성 실패: {str(e)}"})
+        raise ValidationError({"detail": f"가계부 생성 실패: {str(e)}"})
 
 
 def get_wallet_detail(user, wallet_uuid):
@@ -26,7 +26,7 @@ def get_wallet_detail(user, wallet_uuid):
         return wallet
     except Exception as e:
         print("💥 Wallet 개별 조회 오류:", e)
-        raise ValidationError({"detail": f"지갑 조회 실패: {str(e)}"})
+        raise ValidationError({"detail": f"가계부 조회 실패: {str(e)}"})
 
 
 def update_wallet(user, wallet_uuid, data):
@@ -47,5 +47,15 @@ def update_wallet(user, wallet_uuid, data):
     except Wallet.DoesNotExist:
         raise ValidationError({"detail": "정보를 찾을 수 없습니다."})
     except Exception as e:
-        raise ValidationError({"detail": f"수정 실패: {str(e)}"})
+        raise ValidationError({"detail": f"가계부 수정 실패: {str(e)}"})
 
+def delete_wallet(user, wallet_uuid):
+    try:
+        wallet = Wallet.objects.get(user=user, wallet_uuid=wallet_uuid)
+
+        wallet.delete()
+
+        return wallet
+    except Exception as e:
+        print("💥 Wallet 삭제 오류:", e)
+        raise ValidationError({"detail": f"삭제 실패: {str(e)}"})

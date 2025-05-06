@@ -66,5 +66,16 @@ class WalletView(APIView):
 
         return Response({"walletUuid": wallet.wallet_uuid}, status=200)
 
+    def delete(self, request, wallet_uuid):
+        test_user = User.objects.first()
+
+        wallet = services.delete_wallet(
+            user = test_user,
+            wallet_uuid = wallet_uuid
+        )
+
+        return Response(status=204)
+
+
 
 
