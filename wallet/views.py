@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.core.serializers import serialize
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
+from statistic.models import MonthlyStatistic
 from wallet import services
 from wallet.serializers import WalletCreateSerializer, WalletDetailSerializer, WalletUpdateSerializer
 
@@ -69,7 +69,7 @@ class WalletView(APIView):
     def delete(self, request, wallet_uuid):
         test_user = User.objects.first()
 
-        wallet = services.delete_wallet(
+        services.delete_wallet(
             user = test_user,
             wallet_uuid = wallet_uuid
         )
@@ -77,5 +77,25 @@ class WalletView(APIView):
         return Response(status=204)
 
 
+class WalletTotalView(APIView):
+    permission_classes = []
+    def get(self, request):
+
+        year = request.query_params.get('year')
+        month = request.query_params.get('month')
+
+        test_user = User.objects.first()
+
+        if not (year and month):
+            return Response({"detail": "year와 month는 필수입니다."}, status=400)
 
 
+        result = services.total_wallet(
+            user = test_user,
+            year = year,
+            month = month
+        )
+
+
+        return Response({"income": result["total_income"],
+                         "expense" : result["total_expense"]}, status=200)

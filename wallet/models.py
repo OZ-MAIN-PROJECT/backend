@@ -57,8 +57,8 @@ class WalletCategory(models.Model):
 
 class Wallet(models.Model):
     TYPE_CHOICES = [
-        ('Expense', '지출'),
-        ('Income', '수입'),
+        ('EXPENSE', '지출'),
+        ('INCOME', '수입'),
     ]
 
 
@@ -66,7 +66,7 @@ class Wallet(models.Model):
     wallet_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     type = models.CharField(max_length=40, choices=TYPE_CHOICES)
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    amount = models.IntegerField()
     title = models.CharField(max_length=255)
     content = models.TextField()
     wallet_category = models.ForeignKey(WalletCategory, to_field='wallet_category_type', on_delete=models.PROTECT, null=False)

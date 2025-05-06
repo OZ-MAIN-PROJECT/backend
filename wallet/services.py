@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from rest_framework.exceptions import ValidationError
 
 from wallet.models import Wallet, WalletCategory, WalletEmotion
@@ -59,3 +60,23 @@ def delete_wallet(user, wallet_uuid):
     except Exception as e:
         print("💥 Wallet 삭제 오류:", e)
         raise ValidationError({"detail": f"삭제 실패: {str(e)}"})
+
+def total_wallet(user, year, month):
+    try:
+
+        income = Wallet.objects.filter(user=user, date__year=year, date__month=month, type = 'INCOME')
+        expense = Wallet.objects.filter(user=user, date__year=year, date__month=month, type = 'EXPENSE')
+
+        total_income = income.aggregate(Sum('amount'))['amount__sum'] or int(0)
+
+        total_expense = expense.aggregate(Sum('amount'))['amount__sum'] or int(0)
+
+        print(total_income, total_expense)
+
+        return {
+            "total_income": total_income,
+            "total_expense": total_expense
+        }
+    except Exception as e:
+        print("💥 총합 계산 오류:", e)
+        return  ValidationError({"detail": f"총합 계산 오류: {str(e)}"})
