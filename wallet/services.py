@@ -27,3 +27,25 @@ def get_wallet_detail(user, wallet_uuid):
     except Exception as e:
         print("💥 Wallet 개별 조회 오류:", e)
         raise ValidationError({"detail": f"지갑 조회 실패: {str(e)}"})
+
+
+def update_wallet(user, wallet_uuid, data):
+    try:
+        wallet = Wallet.objects.get(user=user, wallet_uuid=wallet_uuid)
+
+        wallet.amount = data['amount']
+        wallet.title = data['title']
+        wallet.content = data['content']
+        wallet.wallet_category = data['wallet_category']
+        wallet.emotion = data['emotion']
+        wallet.date = data['date']
+        wallet.save()
+
+        return wallet
+
+
+    except Wallet.DoesNotExist:
+        raise ValidationError({"detail": "정보를 찾을 수 없습니다."})
+    except Exception as e:
+        raise ValidationError({"detail": f"수정 실패: {str(e)}"})
+

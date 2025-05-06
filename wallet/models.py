@@ -6,14 +6,14 @@ from users.models import User
 
 
 class EmotionChoices(models.TextChoices):
-    HAPPY = 'happy', '행복'
-    SAD = 'sad', '슬픔'
-    ANGRY = 'angry', '분노'
-    ANXIOUS = 'anxious', '불안'
-    COMFORT = 'comfort', '위로'
-    SATISFIED = 'satisfied', '만족'
-    TIRED = 'tired', '지침'
-    EXPECTED = 'expected', '기대'
+    HAPPY = '행복', '행복'
+    SAD = '슬픔', '슬픔'
+    ANGRY = '분노', '분노'
+    ANXIOUS = '불안', '불안'
+    COMFORT = '위로', '위로'
+    SATISFIED = '만족', '만족'
+    TIRED = '지침', '지침'
+    EXPECTED = '기대', '기대'
 
 class WalletEmotion(models.Model):
     wallet_emotion_type = models.CharField(max_length=60, primary_key=True)  # ex: 'happy'
@@ -27,21 +27,21 @@ class WalletEmotion(models.Model):
 
 
 class WalletCategoryChoices(models.TextChoices):
-    FOOD = 'food', '식비'
-    LIVING = 'living', '생활'
-    TRANSPORT = 'transport', '교통/차량'
-    HEALTH = 'health', '건강'
-    EDUCATION = 'education', '교육'
-    SHOPPING = 'shopping', '쇼핑'
-    CULTURE = 'culture', '여가/문화'
-    FINANCE = 'finance', '금융'
+    FOOD = '식비', '식비'
+    LIVING = '생활', '생활'
+    TRANSPORT = '교통/차량', '교통/차량'
+    HEALTH = '건강', '건강'
+    EDUCATION = '교육', '교육'
+    SHOPPING = '쇼핑', '쇼핑'
+    CULTURE = '여가/문화', '여가/문화'
+    FINANCE = '금융', '금융'
 
-    SALARY = 'salary', '급여'
-    BONUS = 'bonus', '상여/보너스'
-    POCKET_MONEY = 'pocket_money', '용돈'
-    SIDE_JOB = 'side_job', '부수입'
-    INVESTMENT = 'investment', '투자 수익'
-    REFUND = 'refund', '환급'
+    SALARY = '급여', '급여'
+    BONUS = '상여/보너스', '상여/보너스'
+    POCKET_MONEY = '용돈', '용돈'
+    SIDE_JOB = '부수입', '부수입'
+    INVESTMENT = '투자수익', '투자수익'
+    REFUND = '환급', '환급'
 
 class WalletCategory(models.Model):
     wallet_category_type = models.CharField(max_length=60, primary_key=True)  # ex: 'food'
