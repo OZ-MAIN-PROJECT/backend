@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_yasg',
 
+#주석
     'accounts',
     'users',
     'wallet',
@@ -135,6 +136,7 @@ SWAGGER_SETTINGS = {
 
 
 SIMPLE_JWT = {
+    "USER_ID_FIELD": "user_id",
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
