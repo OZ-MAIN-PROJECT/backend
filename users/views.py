@@ -19,8 +19,8 @@ class SignupView(APIView):
                 email=data["email"],
                 name=data["name"],
                 nickname=data["nickname"],
-                phone=data["phone"],
-                gender=data["gender"],
+                question=data["question"],
+                answer=data["answer"],
                 password=make_password(data["password"]),
             )
             return Response({"message": "회원가입 성공"}, status=status.HTTP_201_CREATED)
