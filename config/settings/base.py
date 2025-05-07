@@ -7,8 +7,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = 'django-insecure-8zjl)bzv5vqgb04s-e=))l2_*nctad71t%$ko=od)w47gy%uz8'
 
 DEBUG = True
+APPEND_SLASH = True
 
 ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1"]
+AUTH_USER_MODEL = 'users.User'
 
 
 INSTALLED_APPS = [
@@ -24,8 +26,9 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     'accounts',
+    'users',
     'wallet',
-    'stats',
+    'statistic',
     'community',
 ]
 
