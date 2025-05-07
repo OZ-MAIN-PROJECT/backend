@@ -9,8 +9,8 @@ from wallet import services
 from wallet.serializers import WalletCreateSerializer, WalletDetailSerializer, WalletUpdateSerializer
 
 # 로그인이 안되서 유저 지정(테스트를 위해 나중에 지워야함)
-User = get_user_model()
-user = User.objects.first()
+# User = get_user_model()
+# user = User.objects.first()
 
 # 가계부 생성
 class WalletCreateView(APIView):
@@ -21,13 +21,13 @@ class WalletCreateView(APIView):
     def post(self, request):
 
         # 로그인이 안되서 유저 지정(테스트를 위해 나중에 지워야함)
-        test_user = User.objects.first()
+       # test_user = User.objects.first()
 
         serializer = WalletCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         wallet = services.create_wallet(
-            user = test_user,
+            user = request.user,
             data=serializer.validated_data
         )
 
@@ -40,10 +40,10 @@ class WalletView(APIView):
 
     # 가계부 개별 조회
     def get(self, request, wallet_uuid):
-        test_user = User.objects.first()
+       # test_user = User.objects.first()
 
         wallet = services.get_wallet_detail(
-            user = test_user,
+            user = request.user,
             wallet_uuid = wallet_uuid
         )
 
@@ -53,13 +53,13 @@ class WalletView(APIView):
 
     # 가계부 수정
     def patch(self, request, wallet_uuid):
-        test_user = User.objects.first()
+        # test_user = User.objects.first()
 
         serializer = WalletUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         wallet = services.update_wallet(
-            user = test_user,
+            user = request.user,
             wallet_uuid = wallet_uuid,
             data=serializer.validated_data
         )
@@ -67,10 +67,10 @@ class WalletView(APIView):
         return Response({"walletUuid": wallet.wallet_uuid}, status=200)
 
     def delete(self, request, wallet_uuid):
-        test_user = User.objects.first()
+        # test_user = User.objects.first()
 
         services.delete_wallet(
-            user = test_user,
+            user = request.user,
             wallet_uuid = wallet_uuid
         )
 
@@ -84,14 +84,14 @@ class WalletTotalView(APIView):
         year = request.query_params.get('year')
         month = request.query_params.get('month')
 
-        test_user = User.objects.first()
+        # test_user = User.objects.first()
 
         if not (year and month):
             return Response({"detail": "year와 month는 필수입니다."}, status=400)
 
 
         result = services.total_wallet(
-            user = test_user,
+            user = request.user,
             year = year,
             month = month
         )
