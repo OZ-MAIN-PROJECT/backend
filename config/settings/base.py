@@ -1,12 +1,17 @@
 from datetime import timedelta
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ENV_MODE = os.getenv("DJANGO_ENV", "local")
+env_file = ".env.prod" if ENV_MODE == "prod" else ".env.local"
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
-SECRET_KEY = 'django-insecure-8zjl)bzv5vqgb04s-e=))l2_*nctad71t%$ko=od)w47gy%uz8'
-
-DEBUG = True
+# SECRET_KEY = 'django-insecure-8zjl)bzv5vqgb04s-e=))l2_*nctad71t%$ko=od)w47gy%uz8'
+#
+# DEBUG = True
 APPEND_SLASH = True
 
 ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1"]
@@ -62,14 +67,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Django_Main',
-        'USER': 'dev_user',
-        'PASSWORD': 'securepassword',
-        'HOST': 'localhost',
-        'PORT': '54322',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
