@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/wallet/', include('wallet.urls')),
     path('api/wallet/statistic/', include('statistic.urls')),
     path('api/community/', include('community.urls')),
+    path('api/notice/', include('notice.urls')),
 
     # JWT
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

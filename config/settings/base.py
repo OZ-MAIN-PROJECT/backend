@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'wallet',
     'statistic',
     'community',
+    'notice',
 ]
 
 MIDDLEWARE = [
