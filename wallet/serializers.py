@@ -25,7 +25,11 @@ class WalletCreateSerializer(WalletCategoryFieldMixin, serializers.ModelSerializ
 class WalletDetailSerializer(WalletCategoryFieldMixin, serializers.ModelSerializer):
     walletUuid = serializers.UUIDField(source='wallet_uuid')
     createdAt = serializers.DateTimeField(source='created_at')
+    date = serializers.SerializerMethodField()
 
+    def get_date(self, obj):
+        return obj.date if isinstance(obj.date, str) else obj.date.isoformat()
+        # 또는 obj.date.strftime('%Y-%m-%d') 도 가능
 
     class Meta:
         model = Wallet
