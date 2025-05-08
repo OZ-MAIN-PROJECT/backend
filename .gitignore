@@ -16,6 +16,7 @@ venv/
 .env
 .venv/
 
+
 # VSCode settings
 .vscode/
 
@@ -25,4 +26,3 @@ venv/
 # System files
 .DS_Store
 Thumbs.db
-
