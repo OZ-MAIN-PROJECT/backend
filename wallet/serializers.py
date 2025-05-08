@@ -28,8 +28,7 @@ class WalletDetailSerializer(WalletCategoryFieldMixin, serializers.ModelSerializ
     date = serializers.SerializerMethodField()
 
     def get_date(self, obj):
-        return obj.date if isinstance(obj.date, str) else obj.date.isoformat()
-        # 또는 obj.date.strftime('%Y-%m-%d') 도 가능
+        return obj.date.date() if hasattr(obj.date, 'date') else obj.date
 
     class Meta:
         model = Wallet
@@ -37,6 +36,8 @@ class WalletDetailSerializer(WalletCategoryFieldMixin, serializers.ModelSerializ
             'walletUuid', 'type', 'amount', 'title', 'content',
             'date', 'createdAt','walletCategory', 'emotion'
         ]
+
+        read_only_fields = ['id', 'created_at', 'updated_at', 'deleted_at', 'date']
 
 
 # 가계부 수정
