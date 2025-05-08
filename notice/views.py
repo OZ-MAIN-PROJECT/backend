@@ -75,7 +75,7 @@ class NoticeDeleteView(generics.DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({"detail": "삭제 완료"}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # 공지사항 좋아요 등록/취소 (로그인 유저만)
