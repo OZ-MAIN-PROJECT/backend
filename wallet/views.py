@@ -1,3 +1,4 @@
+from django.db.models.expressions import result
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -128,6 +129,24 @@ class WalletDailyView(APIView):
         result = services.get_wallet_daily(
             user = request.user,
             date = date
+        )
+
+        return Response(result, status=200)
+
+class WalletListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        keyword = request.query_params.get('keyword')
+        page = int(request.query_params.get('page', 1))
+        size = int(request.query_params.get('size', 10))
+
+
+        result = services.get_wallet_list(
+            user = request.user,
+            page = page,
+            size = size,
+            keyword = keyword
         )
 
         return Response(result, status=200)

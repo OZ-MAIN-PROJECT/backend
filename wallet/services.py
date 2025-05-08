@@ -1,6 +1,7 @@
 from collections import defaultdict
 
-from django.db.models import Sum, Window, F
+from django.core.paginator import Paginator
+from django.db.models import Sum, Window, F, Q
 from django.db.models.functions import RowNumber, TruncDate
 from rest_framework.exceptions import ValidationError
 from calendar import monthrange
@@ -181,3 +182,42 @@ def get_wallet_daily(user, date) :
     except Exception as e:
         print("💥 Wallet 일별 조회 오류:", e)
         raise ValidationError({"detail": f"일별 조회 실패: {str(e)}"})
+
+# 가계부 전체 리스트
+def get_wallet_list(user, page, size, keyword):
+    try:
+        wallets = Wallet.objects.filter(user=user)
+
+        if keyword:
+            wallets = wallets.filter(
+                Q(title__icontains=keyword) | Q(content__icontains=keyword)
+            )
+
+        wallets = wallets.order_by(F('created_at').desc())
+        paginator = Paginator(wallets, size)
+        page_obj = paginator.get_page(page)
+
+        result = []
+
+        for wallet in page_obj.object_list:
+            result.append(
+                {
+                    "walletUuid": str(wallet.wallet_uuid),
+                    "walletCategory": str(wallet.wallet_category),
+                    "title": wallet.title,
+                    "emotion": str(wallet.emotion),
+                    "type": str(wallet.type),
+                    "amount": int(wallet.amount),
+                    "date": wallet.date.isoformat(),
+                }
+            )
+
+        return {"page": page_obj.number,
+                "totalPages" : paginator.num_pages,
+                "totalItems" : paginator.count,
+                "result": result
+        }
+
+    except Exception as e:
+        print("💥 Wallet 전체 조회 오류:", e)
+        raise ValidationError({"detail": f"전체 조회 실패: {str(e)}"})

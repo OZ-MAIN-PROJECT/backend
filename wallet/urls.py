@@ -1,5 +1,5 @@
 from django.urls import path
-from wallet.views import WalletListCreateView, WalletView, WalletTotalView, WalletDailyView
+from wallet.views import WalletListCreateView, WalletView, WalletTotalView, WalletDailyView, WalletListView
 
 urlpatterns = [
 
@@ -12,4 +12,6 @@ urlpatterns = [
     path("total", WalletTotalView.as_view(), name="wallet_total"),
 
     path("daily", WalletDailyView.as_view(), name="wallet_daily"),
+
+    path("entries", WalletListView.as_view(), name="wallet_entries"),
 ]
