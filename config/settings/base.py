@@ -2,6 +2,8 @@ from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -16,6 +18,18 @@ APPEND_SLASH = True
 
 ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1"]
 AUTH_USER_MODEL = 'users.User'
+
+
+dsn = os.getenv("SENTRY_DSN")  # .env.prod에서 불러옴
+
+if dsn:
+    sentry_sdk.init(
+        dsn=dsn,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,  # 퍼포먼스 추적 (조절 가능)
+        send_default_pii=True    # 사용자 IP 등 기본 정보 포함
+    )
+
 
 
 INSTALLED_APPS = [
@@ -137,7 +151,6 @@ SWAGGER_SETTINGS = {
 
 
 SIMPLE_JWT = {
-    "USER_ID_FIELD": "user_id",
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
