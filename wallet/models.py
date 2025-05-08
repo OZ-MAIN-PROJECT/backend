@@ -71,7 +71,7 @@ class Wallet(models.Model):
     content = models.TextField()
     wallet_category = models.ForeignKey(WalletCategory, to_field='wallet_category_type', on_delete=models.PROTECT, null=False)
     emotion = models.ForeignKey(WalletEmotion, to_field='wallet_emotion_type', on_delete=models.PROTECT, null=False)
-    date = models.DateTimeField()
+    date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
