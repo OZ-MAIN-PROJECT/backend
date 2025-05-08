@@ -9,7 +9,7 @@ from wallet.serializers import WalletCreateSerializer, WalletDetailSerializer, W
 
 
 
-# 가계부 생성
+# 가계부
 class WalletListCreateView(APIView):
     permission_classes = [IsAuthenticated]  # 로그인 필수
 

@@ -2,14 +2,15 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Wallet, WalletEmotion, WalletCategory
 
-
-# 가계부 생성
-class WalletCreateSerializer(serializers.ModelSerializer):
+# 카테고리 필드 중복
+class WalletCategoryFieldMixin(serializers.Serializer):
     walletCategory = serializers.PrimaryKeyRelatedField(
         queryset=WalletCategory.objects.all(),
         source='wallet_category'
     )
 
+# 가계부 생성
+class WalletCreateSerializer(WalletCategoryFieldMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Wallet
@@ -21,19 +22,21 @@ class WalletCreateSerializer(serializers.ModelSerializer):
 
 
 # 가계부 개별 조회
-class WalletDetailSerializer(serializers.ModelSerializer):
+class WalletDetailSerializer(WalletCategoryFieldMixin, serializers.ModelSerializer):
+    walletUuid = serializers.UUIDField(source='wallet_uuid')
+    createdAt = serializers.DateTimeField(source='created_at')
+
+
     class Meta:
         model = Wallet
-        fields = '__all__'
+        fields = [
+            'walletUuid', 'type', 'amount', 'title', 'content',
+            'date', 'createdAt','walletCategory', 'emotion'
+        ]
 
 
 # 가계부 수정
-class WalletUpdateSerializer(serializers.ModelSerializer):
-    walletCategory = serializers.PrimaryKeyRelatedField(
-        queryset=WalletCategory.objects.all(),
-        source='wallet_category'
-    )
-
+class WalletUpdateSerializer(WalletCategoryFieldMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Wallet

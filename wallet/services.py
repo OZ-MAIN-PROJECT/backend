@@ -6,9 +6,9 @@ from django.db.models.functions import RowNumber, TruncDate
 from rest_framework.exceptions import ValidationError
 from calendar import monthrange
 from datetime import date, timedelta
-
 from wallet.models import Wallet, WalletCategory, WalletEmotion
 
+# 가계부 생성
 def create_wallet(user,data) :
     try:
         return Wallet.objects.create(
@@ -25,7 +25,7 @@ def create_wallet(user,data) :
         print("💥 Wallet 생성 오류:", e)
         raise ValidationError({"detail": f"가계부 생성 실패: {str(e)}"})
 
-
+# 가계부 개별 조회
 def get_wallet_detail(user, wallet_uuid):
     try:
         wallet = Wallet.objects.get(user=user, wallet_uuid=wallet_uuid)
