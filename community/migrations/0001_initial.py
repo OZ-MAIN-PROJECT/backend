@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
             name='Community',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('information', '정보'), ('qna', '질문')], max_length=20)),
                 ('title', models.CharField(max_length=255)),
                 ('content', models.TextField()),
                 ('image', models.URLField(blank=True, null=True)),
@@ -24,3 +23,9 @@ class Migration(migrations.Migration):
             ],
         ),
     ]
+
+class CommunityType(models.TextChoices):
+    INFORMATION = 'information', '정보'
+    QNA = 'qna', '질문'
+
+    type = models.CharField(max_length=20, choices=CommunityType.choices)
