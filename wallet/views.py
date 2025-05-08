@@ -138,7 +138,7 @@ class WalletListView(APIView):
 
     def get(self, request):
         keyword = request.query_params.get('keyword')
-        page = int(request.query_params.get('page', 1))
+        page = max(1, int(request.query_params.get('page', 1)))
         size = int(request.query_params.get('size', 10))
 
 

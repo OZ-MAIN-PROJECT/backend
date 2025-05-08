@@ -124,14 +124,7 @@ def get_wallet_monthly(user, year, month):
         for wallet in top_wallets:
 
             result_map[wallet.only_date].append(
-                {
-                    "walletUuid": str(wallet.wallet_uuid),
-                    "walletCategory": str(wallet.wallet_category),
-                    "title": wallet.title,
-                    "emotion": str(wallet.emotion),
-                    "type": str(wallet.type),
-                    "amount": int(wallet.amount),
-                }
+                    wallet_to_dict(wallet)
             )
 
         # 응답 구성
@@ -168,14 +161,7 @@ def get_wallet_daily(user, date) :
 
         for wallet in wallets :
             result_map[wallet.date.isoformat()].append(
-                {
-                    "walletUuid": str(wallet.wallet_uuid),
-                    "walletCategory": str(wallet.wallet_category),
-                    "title": wallet.title,
-                    "emotion": str(wallet.emotion),
-                    "type": str(wallet.type),
-                    "amount": int(wallet.amount),
-                }
+                    wallet_to_dict(wallet)
             )
 
         return {"daily": result_map}
@@ -200,17 +186,11 @@ def get_wallet_list(user, page, size, keyword):
         result = []
 
         for wallet in page_obj.object_list:
-            result.append(
-                {
-                    "walletUuid": str(wallet.wallet_uuid),
-                    "walletCategory": str(wallet.wallet_category),
-                    "title": wallet.title,
-                    "emotion": str(wallet.emotion),
-                    "type": str(wallet.type),
-                    "amount": int(wallet.amount),
-                    "date": wallet.date.isoformat(),
-                }
-            )
+            result.append({
+                # 딕셔너리 언패킹 (dictionary unpacking) 문법 dict 안에 또 다른 dict를 키-값
+                **wallet_to_dict(wallet),
+                "date": wallet.date.isoformat() if hasattr(wallet.date, "isoformat") else wallet.date
+            })
 
         return {"page": page_obj.number,
                 "totalPages" : paginator.num_pages,
@@ -221,3 +201,14 @@ def get_wallet_list(user, page, size, keyword):
     except Exception as e:
         print("💥 Wallet 전체 조회 오류:", e)
         raise ValidationError({"detail": f"전체 조회 실패: {str(e)}"})
+
+# 중복 코드
+def wallet_to_dict(wallet):
+    return {
+        "walletUuid": str(wallet.wallet_uuid),
+        "walletCategory": str(wallet.wallet_category),
+        "title": wallet.title,
+        "emotion": str(wallet.emotion),
+        "type": str(wallet.type),
+        "amount": int(wallet.amount)
+}
