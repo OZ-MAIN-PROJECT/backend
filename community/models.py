@@ -14,3 +14,8 @@ class Community(models.Model):
 
     def __str__(self):
         return f"[{self.type}] {self.title}"
+
+
+class CommunityType(models.TextChoices):
+    INFORMATION = 'information', '정보'
+    QNA         = 'qna',         '질문'
