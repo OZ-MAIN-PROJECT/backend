@@ -12,7 +12,7 @@ DATABASES = {
         'NAME': 'DjangoMain',
         'USER': 'dev_user',
         'PASSWORD': 'securepassword',
-        'HOST': 'db',
+        'HOST': 'djangomain.ckpawa0qerlm.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
     }
 }
