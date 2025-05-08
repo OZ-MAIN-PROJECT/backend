@@ -1,12 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-import uuid
 from django.db import models
-
-
-class GenderChoices(models.TextChoices):
-    MALE = 'M', '남성'
-    FEMALE = 'F', '여성'
-    OTHER = 'O', '기타'
 
 
 class UserManager(BaseUserManager):
@@ -15,7 +8,7 @@ class UserManager(BaseUserManager):
             raise ValueError('이메일은 필수입니다.')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)  # 비밀번호 해싱
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -28,24 +21,21 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
-    user_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     name = models.CharField(max_length=30)
     nickname = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=50)
-    gender = models.CharField(max_length=1, choices=GenderChoices.choices)
+    question = models.CharField(max_length=100)
+    answer = models.CharField(max_length=100)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    lastlogin_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'nickname', 'phone']
+    REQUIRED_FIELDS = ['name', 'nickname']
 
     objects = UserManager()
 

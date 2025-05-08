@@ -12,6 +12,10 @@ staticfiles/
 
 # Python virtual environments
 venv/
+.env/
+.env
+.venv/
+
 
 # VSCode settings
 .vscode/

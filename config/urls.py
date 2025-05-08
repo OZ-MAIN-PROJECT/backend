@@ -28,6 +28,10 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    #user.urls 테스트용으로 사용함
+    path('', include('users.urls')),
+
+
     # 각 앱 API 연결
     path('api/accounts/', include('accounts.urls')),
     path('api/wallet/', include('wallet.urls')),
