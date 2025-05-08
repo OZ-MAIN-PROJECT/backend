@@ -6,6 +6,7 @@ from users.models import User
 # 공지사항 조회 (목록, 상세) 
 class NoticeSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
+    view_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Notice
@@ -15,10 +16,11 @@ class NoticeSerializer(serializers.ModelSerializer):
             'title',
             'content',
             'like_count',
+            'view_count',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['notice_id', 'user', 'like_count', 'created_at', 'updated_at']
+        read_only_fields = ['notice_id', 'user', 'like_count', 'view_count', 'created_at', 'updated_at']
 
 
 # 공지사항 등록/수정
