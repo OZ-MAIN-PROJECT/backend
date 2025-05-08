@@ -114,3 +114,20 @@ class WalletTotalView(APIView):
         return Response({"income": result["total_income"],
                          "expense" : result["total_expense"]}, status=200)
 
+
+class WalletDailyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        date = request.query_params.get('date')
+
+        if not date:
+            return Response({"detail": "year와 month는 필수입니다."}, status=400)
+
+
+        result = services.get_wallet_daily(
+            user = request.user,
+            date = date
+        )
+
+        return Response(result, status=200)

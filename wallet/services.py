@@ -85,7 +85,7 @@ def total_wallet(user, year, month):
         print("💥 총합 계산 오류:", e)
         return  ValidationError({"detail": f"총합 계산 오류: {str(e)}"})
 
-
+# 가계부 월별 리스트
 def get_wallet_monthly(user, year, month):
 
     try:
@@ -157,3 +157,27 @@ def get_wallet_monthly(user, year, month):
     except Exception as e:
         print("💥 Wallet 월별 조회 오류:", e)
         raise ValidationError({"detail": f"월별 조회 실패: {str(e)}"})
+
+# 가계부 일별 리스트
+def get_wallet_daily(user, date) :
+    try:
+        wallets = Wallet.objects.filter(user=user, date=date)
+
+        result_map = defaultdict(list)
+
+        for wallet in wallets :
+            result_map[wallet.date.isoformat()].append(
+                {
+                    "walletUuid": str(wallet.wallet_uuid),
+                    "walletCategory": str(wallet.wallet_category),
+                    "title": wallet.title,
+                    "emotion": str(wallet.emotion),
+                    "type": str(wallet.type),
+                    "amount": int(wallet.amount),
+                }
+            )
+
+        return {"daily": result_map}
+    except Exception as e:
+        print("💥 Wallet 일별 조회 오류:", e)
+        raise ValidationError({"detail": f"일별 조회 실패: {str(e)}"})
