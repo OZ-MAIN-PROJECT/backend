@@ -19,9 +19,10 @@ class SignupView(APIView):
                 email=data["email"],
                 name=data["name"],
                 nickname=data["nickname"],
-                phone=data["phone"],
-                gender=data["gender"],
+                question=data["question"],
+                answer=data["answer"],
                 password=make_password(data["password"]),
+                role=data.get("role", "user"),
             )
             return Response({"message": "회원가입 성공"}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -41,6 +42,8 @@ class LoginView(APIView):
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'nickname': user.nickname,
+                'role': user.role,
             })
         else:
             return Response({'error': '로그인 실패'}, status=status.HTTP_401_UNAUTHORIZED)

@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -18,8 +17,11 @@ class UserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
-
 class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = (
+        ('admin', '관리자'),
+        ('user', '일반 사용자'),
+    )
     user_id = models.AutoField(primary_key=True)
 
     name = models.CharField(max_length=30)
@@ -27,6 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     question = models.CharField(max_length=100)
     answer = models.CharField(max_length=100)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
