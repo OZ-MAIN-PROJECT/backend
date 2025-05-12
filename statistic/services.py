@@ -1,7 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP
 
-from django.db.models import Count
-from django.db.models.functions import TruncDate
+from django.db.models import Count, Sum
 from rest_framework.exceptions import ValidationError
 
 from wallet.models import Wallet
@@ -24,7 +23,9 @@ def get_emotion_statistic(user, year, month):
         emotion_stats = (
             queryset
             .values("emotion")
-            .annotate(count=Count("id"))
+            .annotate(count=Count("id"),
+                      amount=Sum("amount")
+            ).order_by("-count")
         )
 
         result = []
@@ -33,7 +34,8 @@ def get_emotion_statistic(user, year, month):
             rounded_percentage = percentage.quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
             result.append({
                 'emotion': stat['emotion'],
-                'percentage': float(rounded_percentage)
+                'rate': float(rounded_percentage),
+                'amount' : stat['amount']
             })
 
 
@@ -43,3 +45,41 @@ def get_emotion_statistic(user, year, month):
     except Exception as e:
         print("💥 Wallet 월별 감정 통계 조회 오류:", e)
         raise ValidationError({"detail": f"월별 감정 통계 조회 실패: {str(e)}"})
+
+
+def get_category_statistic(user, year, month):
+    try:
+
+        queryset = Wallet.objects.filter(
+            user=user,
+            date__year=year,
+            date__month=month
+        )
+
+        total_count = queryset.count()
+        if total_count == 0:
+            return []
+
+        emotion_stats = (
+            queryset
+            .values("wallet_category")
+            .annotate(count=Count("id"),
+                      amount=Sum("amount")
+                      ).order_by("-count")
+        )
+
+        result = []
+        for stat in emotion_stats:
+            percentage = (Decimal(stat['count']) / Decimal(total_count)) * 100
+            rounded_percentage = percentage.quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
+            result.append({
+                'category': stat['wallet_category'],
+                'rate': float(rounded_percentage),
+                'amount': stat['amount']
+            })
+
+        return result
+
+    except Exception as e:
+        print("💥 Wallet 월별 카테고리 통계 조회 오류:", e)
+        raise ValidationError({"detail": f"월별 카테고리 통계 조회 실패: {str(e)}"})
