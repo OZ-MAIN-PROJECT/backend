@@ -10,15 +10,15 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_MODE = os.getenv("DJANGO_ENV", "local")
-env_file = ".env.prod" if ENV_MODE == "prod" else ".env.local"
-load_dotenv(dotenv_path=BASE_DIR / ".env")
+env_file = ".env.prod" if ENV_MODE == "prod" else ".env"
+load_dotenv(dotenv_path=BASE_DIR / env_file)
 
 # SECRET_KEY = 'django-insecure-8zjl)bzv5vqgb04s-e=))l2_*nctad71t%$ko=od)w47gy%uz8'
 #
 # DEBUG = True
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1", "127.0.0.1:8000"]
 AUTH_USER_MODEL = 'users.User'
 
 
