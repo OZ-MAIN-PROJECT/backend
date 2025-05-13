@@ -25,7 +25,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
 
     name = models.CharField(max_length=30)
-    nickname = models.CharField(max_length=30)
+    nickname = models.CharField(max_length=30, unique=True)
     email = models.EmailField(unique=True)
     question = models.CharField(max_length=100)
     answer = models.CharField(max_length=100)
