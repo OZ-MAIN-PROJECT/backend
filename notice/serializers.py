@@ -6,7 +6,7 @@ from users.models import User
 # 공지사항 조회 (목록, 상세) 
 class NoticeSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
-    view_count = serializers.SerializerMethodField()
+    view_count = serializers.SerializerMethodField()  # 조회수 필드 (조회수는 NoticeView에서 계산)
 
     class Meta:
         model = Notice
@@ -21,6 +21,10 @@ class NoticeSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['notice_id', 'user', 'like_count', 'view_count', 'created_at', 'updated_at']
+
+    # 조회수 필드 처리 메서드 (SerializerMethodField용)
+    def get_view_count(self, obj):
+        return NoticeView.objects.filter(notice=obj).count()
 
 
 # 공지사항 등록/수정
