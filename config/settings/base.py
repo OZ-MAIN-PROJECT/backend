@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
+    'corsheaders',
 
 #주석
     'accounts',
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -81,6 +83,25 @@ TEMPLATES = [
         },
     },
 ]
+
+# ✅ 특정 도메인만 허용
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+# 인증 요청(Credentials: include)을 허용하려면
+CORS_ALLOW_CREDENTIALS = True
+
+# 모든 HTTP 메서드 허용 (GET, POST 등)
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
