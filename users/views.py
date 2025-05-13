@@ -10,6 +10,29 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 from django.contrib.auth.hashers import make_password
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from users.models import User
+from rest_framework.permissions import AllowAny
+
+
+class DuplicateCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        email = request.query_params.get('email')
+        nickname = request.query_params.get('nickname')
+
+        if email and User.objects.filter(email=email).exists():
+            return Response({"email": "이미 사용 중인 이메일입니다."}, status=status.HTTP_200_OK)
+
+        if nickname and User.objects.filter(nickname=nickname).exists():
+            return Response({"nickname": "이미 사용 중인 닉네임입니다."}, status=status.HTTP_200_OK)
+
+        return Response({"message": "사용 가능한 이메일 및 닉네임입니다."}, status=status.HTTP_200_OK)
+
+
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
@@ -17,12 +40,6 @@ class SignupView(APIView):
         data = request.data
         email = data.get("email")
         nickname = data.get("nickname")
-
-        if User.objects.filter(email=email).exists():
-            return Response({"error": "이미 사용 중인 이메일입니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if User.objects.filter(nickname=nickname).exists():
-            return Response({"error": "이미 사용 중인 닉네임입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.create(
