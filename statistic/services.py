@@ -3,6 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Count, Sum
 from rest_framework.exceptions import ValidationError
 
+from statistic.models import MonthlyStatistic
 from wallet.models import Wallet
 
 
@@ -83,3 +84,34 @@ def get_category_statistic(user, year, month):
     except Exception as e:
         print("💥 Wallet 월별 카테고리 통계 조회 오류:", e)
         raise ValidationError({"detail": f"월별 카테고리 통계 조회 실패: {str(e)}"})
+
+def create_monthly_statistic(user, year, month):
+    total_income = Wallet.objects.filter(
+        user=user,
+        date__year=year,
+        date__month=month,
+        type='INCOME'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+
+    total_expense = Wallet.objects.filter(
+        user=user,
+        date__year=year,
+        date__month=month,
+        type='EXPENSE'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    stat_exists = MonthlyStatistic.objects.filter(
+        user=user, year=year, month=month
+    ).exists()
+
+    if not stat_exists:
+        MonthlyStatistic.objects.create(
+            user=user,
+            year=year,
+            month=month,
+            total_income=total_income,
+            total_expense=total_expense
+        )
+    else:
+        print(f"⚠️ {user.email}: 이미 {year}-{month} 통계 존재함. 저장 생략.")
