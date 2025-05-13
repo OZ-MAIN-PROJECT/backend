@@ -10,8 +10,8 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_MODE = os.getenv("DJANGO_ENV", "local")
-env_file = ".env.prod" if ENV_MODE == "prod" else ".env"
-load_dotenv(dotenv_path=BASE_DIR / env_file)
+env_file = ".env.prod" if ENV_MODE == "prod" else ".env.local"
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # SECRET_KEY = 'django-insecure-8zjl)bzv5vqgb04s-e=))l2_*nctad71t%$ko=od)w47gy%uz8'
 #
