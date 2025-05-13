@@ -11,7 +11,7 @@ DATABASES = {
         'USER': 'dev_user',
         'PASSWORD': 'securepassword',
         'HOST': 'localhost',
-        'PORT': '54322',
+        'PORT': '5432',
     }
 }
 
