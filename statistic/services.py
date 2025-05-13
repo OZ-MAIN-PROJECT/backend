@@ -55,7 +55,8 @@ def get_category_statistic(user, year, month):
         queryset = Wallet.objects.filter(
             user=user,
             date__year=year,
-            date__month=month
+            date__month=month,
+            type="EXPENSE"
         ).exclude(wallet_category__isnull=True).exclude(wallet_category="")
 
         total_amount = queryset.aggregate(total=Sum("amount"))["total"]
