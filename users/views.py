@@ -15,11 +15,20 @@ class SignupView(APIView):
 
     def post(self, request):
         data = request.data
+        email = data.get("email")
+        nickname = data.get("nickname")
+
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "이미 사용 중인 이메일입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(nickname=nickname).exists():
+            return Response({"error": "이미 사용 중인 닉네임입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             user = User.objects.create(
-                email=data["email"],
+                email=email,
                 name=data["name"],
-                nickname=data["nickname"],
+                nickname=nickname,
                 question=data["question"],
                 answer=data["answer"],
                 password=make_password(data["password"]),
@@ -28,6 +37,7 @@ class SignupView(APIView):
             return Response({"message": "회원가입 성공"}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
