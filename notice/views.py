@@ -34,8 +34,6 @@ class NoticeDetailView(generics.RetrieveAPIView):
 
 
 # 공지사항 등록 (관리자만)
-# views.py
-
 class NoticeCreateView(generics.CreateAPIView):
     queryset = Notice.objects.all()
     serializer_class = NoticeCreateUpdateSerializer
