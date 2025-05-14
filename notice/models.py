@@ -1,18 +1,18 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from users.models import User
 
 
 # 공지사항 게시글
 class Notice(models.Model):
     notice_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # 관리자
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')  # 관리자
     title = models.CharField(max_length=100)
     content = models.TextField()
     like_count = models.PositiveIntegerField(default=0)  # 좋아요 수
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'notice'
@@ -24,7 +24,7 @@ class Notice(models.Model):
 # 공지사항 좋아요
 class NoticeLike(models.Model):
     like_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     notice = models.ForeignKey(Notice, on_delete=models.CASCADE, related_name='likes')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,7 +41,7 @@ class NoticeLike(models.Model):
 # 공지사항 조회수
 class NoticeView(models.Model):
     view_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,db_column='user_id')
     notice = models.ForeignKey(Notice, on_delete=models.CASCADE, related_name='views')
     viewed_at = models.DateTimeField(auto_now_add=True)
 
