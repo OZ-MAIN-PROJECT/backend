@@ -52,3 +52,25 @@ class WalletCategoryStatisticView(APIView):
         )
 
         return Response(result, status=200)
+
+class WalletMonhtlyStatisticView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        year = request.query_params.get('year')
+
+
+        if not year:
+            return Response({"detail": "year는 필수입니다."}, status=400)
+
+        try:
+            year = int(year)
+        except ValueError:
+            return Response({"detail": "year는 숫자여야 합니다."}, status=400)
+
+        result = services.get_monthly_statistic(
+            user=request.user,
+            year=year
+        )
+
+        return Response(result, status=200)

@@ -1,6 +1,8 @@
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.db.models import Count, Sum
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from rest_framework.exceptions import ValidationError
 
 from statistic.models import MonthlyStatistic
@@ -93,7 +95,41 @@ def get_category_statistic(user, year, month):
         print("💥 Wallet 월별 감정 통계 조회 오류:", e)
         raise ValidationError({"detail": f"월별 감정 통계 조회 실패: {str(e)}"})
 
-def create_monthly_statistic(user, year, month):
+def get_monthly_statistic(user, year):
+    try:
+
+        stats = MonthlyStatistic.objects.filter(
+            user=user,
+            year=year
+        )
+
+        # 월별로 매핑 (1~12)
+        month_map = {stat.month: stat for stat in stats}
+
+        monthly_stats = []
+        for month in range(1, 13):
+            stat = month_map.get(month)
+            monthly_stats.append({
+                "month": month,
+                "incomeAmount": stat.total_income if stat else 0,
+                "expenseAmount": stat.total_expense if stat else 0,
+            })
+        return {
+            "year": year,
+            "monthlyStatistics": monthly_stats
+        }
+    except Exception as e:
+        print("💥 Wallet 월별 감정 통계 조회 오류:", e)
+        raise ValidationError({"detail": f"월별 감정 통계 조회 실패: {str(e)}"})
+
+@receiver([post_save, post_delete], sender=Wallet)
+def update_monthly_statistic(sender, instance, **kwargs):
+    user = instance.user
+    date = instance.date
+    year = date.year
+    month = date.month
+
+    # 월별 전체 수입, 지출 계산
     total_income = Wallet.objects.filter(
         user=user,
         date__year=year,
@@ -109,17 +145,16 @@ def create_monthly_statistic(user, year, month):
         type='EXPENSE'
     ).aggregate(total=Sum('amount'))['total'] or 0
 
-    stat_exists = MonthlyStatistic.objects.filter(
-        user=user, year=year, month=month
-    ).exists()
+    # 기존 통계가 있으면 업데이트, 없으면 생성
+    stat, created = MonthlyStatistic.objects.get_or_create(
+        user=user, year=year, month=month,
+        defaults={'total_income': total_income, 'total_expense': total_expense}
+    )
 
-    if not stat_exists:
-        MonthlyStatistic.objects.create(
-            user=user,
-            year=year,
-            month=month,
-            total_income=total_income,
-            total_expense=total_expense
-        )
+    if not created:
+        stat.total_income = total_income
+        stat.total_expense = total_expense
+        stat.save()
+
     else:
         print(f"⚠️ {user.email}: 이미 {year}-{month} 통계 존재함. 저장 생략.")
