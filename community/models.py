@@ -4,8 +4,8 @@ from users.models import User
 
 
 class CommunityType(models.TextChoices):
-    INFORMATION = 'information', '정보'
-    QNA = 'qna', '질문'
+    EMOTION = 'EMOTION', '감정 소통'
+    QUESTION = 'QUESTION', '질문'
 
 
 class Community(models.Model):
