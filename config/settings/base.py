@@ -18,7 +18,7 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 # DEBUG = True
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1", "127.0.0.1:8000"]
+ALLOWED_HOSTS = ["3.93.163.29", "localhost", "127.0.0.1", "127.0.0.1:8000", "sussyoo.kro.kr"]
 AUTH_USER_MODEL = 'users.User'
 
 
