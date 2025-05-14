@@ -27,8 +27,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=30)
     nickname = models.CharField(max_length=30, unique=True)
     email = models.EmailField(unique=True)
-    question = models.CharField(max_length=100)
-    answer = models.CharField(max_length=100)
+    question = models.CharField(max_length=100, blank=False, null=False) # 질/답 빈칸 기본값 허용x
+    answer = models.CharField(max_length=100, blank=False, null=False) # 질/답 빈칸 기본값 허용x
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
 
     is_active = models.BooleanField(default=True)
