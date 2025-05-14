@@ -89,6 +89,7 @@ TEMPLATES = [
 
 # ✅ 특정 도메인만 허용
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173"
     "https://localhost:5173",
     "https://sussyoo.netlify.app/"
 ]
