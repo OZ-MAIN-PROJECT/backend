@@ -88,14 +88,6 @@ class LogoutView(APIView):
         except TokenError:
             return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-class WithdrawView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request):
-        user = request.user
-        user.delete()
-        return Response({"message": "회원 탈퇴 완료"}, status=status.HTTP_204_NO_CONTENT)
-
 class PasswordResetVerifyView(APIView):
     permission_classes = [AllowAny]
 
@@ -112,3 +104,31 @@ class PasswordResetVerifyView(APIView):
             return Response({"message": "확인되었습니다."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"error": "해당 이메일의 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+class MyPageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "user_id": user.user_id,
+            "email": user.email,
+            "name": user.name,
+            "nickname": user.nickname,
+            "role": user.role,
+            "created_at": user.created_at,
+        }, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        user = request.user
+        data = request.data
+
+        user.name = data.get("name", user.name)
+        user.nickname = data.get("nickname", user.nickname)
+        user.save()
+
+        return Response({"message": "회원정보 수정 완료"}, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        request.user.delete()
+        return Response({"message": "회원 탈퇴 완료"}, status=status.HTTP_204_NO_CONTENT)
