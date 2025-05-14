@@ -91,7 +91,7 @@ TEMPLATES = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://localhost:5173",
-    "https://sussyoo.netlify.app/"
+    "https://sussyoo.netlify.app"
 ]
 
 # 인증 요청(Credentials: include)을 허용하려면
