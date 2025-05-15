@@ -5,7 +5,7 @@ from django.db.models import Sum, Window, F, Q
 from django.db.models.functions import RowNumber, TruncDate
 from rest_framework.exceptions import ValidationError
 from calendar import monthrange
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from wallet.models import Wallet
 
 # 가계부 생성
@@ -159,12 +159,14 @@ def get_wallet_daily(user, date) :
 
         result_map = defaultdict(list)
 
+
         for wallet in wallets :
-            result_map[wallet.date.isoformat()].append(
+
+            result_map[ wallet.date.isoformat() if hasattr(wallet.date, "isoformat") else wallet.date].append(
                     wallet_to_dict(wallet)
             )
 
-        return {"daily": result_map}
+        return {"entries": result_map}
     except Exception as e:
         print("💥 Wallet 일별 조회 오류:", e)
         raise ValidationError({"detail": f"일별 조회 실패: {str(e)}"})
@@ -189,7 +191,11 @@ def get_wallet_list(user, page, size, keyword):
             result.append({
                 # 딕셔너리 언패킹 (dictionary unpacking) 문법 dict 안에 또 다른 dict를 키-값
                 **wallet_to_dict(wallet),
-                "date": wallet.date.isoformat() if hasattr(wallet.date, "isoformat") else wallet.date
+                "date": (
+                        wallet.date.isoformat()
+                        if isinstance(wallet.date, (date, datetime))
+                        else wallet.date
+                    )
             })
 
         return {"page": page_obj.number,

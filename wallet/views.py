@@ -141,7 +141,6 @@ class WalletListView(APIView):
         page = max(1, int(request.query_params.get('page', 1)))
         size = int(request.query_params.get('size', 10))
 
-
         result = services.get_wallet_list(
             user = request.user,
             page = page,
