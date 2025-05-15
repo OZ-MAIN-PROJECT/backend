@@ -8,8 +8,8 @@ class MonthlyStatistic(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     total_expense = models.IntegerField()
     total_income = models.IntegerField()
-    year = models.CharField(max_length=4)
-    month = models.CharField(max_length=4)
+    year = models.IntegerField()
+    month = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
 
