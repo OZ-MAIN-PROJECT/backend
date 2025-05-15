@@ -162,7 +162,9 @@ def get_wallet_daily(user, date) :
 
         for wallet in wallets :
 
-            result_map[ wallet.date.isoformat() if hasattr(wallet.date, "isoformat") else wallet.date].append(
+            result_map[
+                ㅔwallet.date.strftime("%Y-%m-%d") if isinstance(wallet.date, (date, datetime)) else wallet.date
+            ].append(
                     wallet_to_dict(wallet)
             )
 
@@ -192,10 +194,11 @@ def get_wallet_list(user, page, size, keyword):
                 # 딕셔너리 언패킹 (dictionary unpacking) 문법 dict 안에 또 다른 dict를 키-값
                 **wallet_to_dict(wallet),
                 "date": (
-                        wallet.date.isoformat()
-                        if isinstance(wallet.date, (date, datetime))
-                        else wallet.date
-                    )
+                    wallet.date.strftime("%Y-%m-%d")
+                    if isinstance(wallet.date, (date, datetime))
+                    else wallet.date
+                )
+
             })
 
         return {"page": page_obj.number,
