@@ -128,7 +128,7 @@ class WalletDailyView(APIView):
 
         result = services.get_wallet_daily(
             user = request.user,
-            date = date
+            target_date = date
         )
 
         return Response(result, status=200)

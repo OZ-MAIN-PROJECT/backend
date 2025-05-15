@@ -153,9 +153,9 @@ def get_wallet_monthly(user, year, month):
         raise ValidationError({"detail": f"월별 조회 실패: {str(e)}"})
 
 # 가계부 일별 리스트
-def get_wallet_daily(user, date) :
+def get_wallet_daily(user, target_date) :
     try:
-        wallets = Wallet.objects.filter(user=user, date=date)
+        wallets = Wallet.objects.filter(user=user, date=target_date)
 
         result_map = defaultdict(list)
 
