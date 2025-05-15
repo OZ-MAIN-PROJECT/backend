@@ -100,23 +100,33 @@ def get_wallet_monthly(user, year, month):
             row_number=Window(
                 expression=RowNumber(),
                 partition_by=[F('only_date')],
-                order_by=[F('amount').desc(),
-                          F('created_at').asc()
-                ]
+                order_by=[F('created_at').asc()]
             )
-        ).filter(row_number=1))
+        ))
 
         # 날짜별 전체 amount 합계
         daily_sums = (
             Wallet.objects
             .filter(user=user, date__year=year, date__month=month)
             .annotate(only_date=TruncDate('date'))
-            .values('only_date')
+            .values('only_date', 'type')
             .annotate(total=Sum('amount'))
         )
+        print(daily_sums)
 
         # 날짜 → 합계 딕셔너리로 변환
-        daily_sum_map = {row['only_date']: row['total'] for row in daily_sums}
+        daily_sum_map = {}
+
+        for row in daily_sums :
+            day = row['only_date']
+            t = row['type']
+            amount = row['total']
+
+            if day not in daily_sum_map:
+                daily_sum_map[day] = {}
+
+            daily_sum_map[day][t] = amount
+
 
         # 날짜 → top entry 매핑
         result_map = defaultdict(list)
@@ -133,11 +143,17 @@ def get_wallet_monthly(user, year, month):
 
 
         monthly = []
+        total_amount = 0
 
         for i in range(num_days):
             current_date = first_day + timedelta(days=i)
             entries = result_map.get(current_date, [])
-            total_amount = daily_sum_map.get(current_date, 0)
+
+            income = daily_sum_map.get(current_date, {}).get('INCOME', 0)
+            expense = daily_sum_map.get(current_date, {}).get('EXPENSE', 0)
+
+            # 누적 합계 업데이트
+            total_amount += income - expense
 
 
             monthly.append({
