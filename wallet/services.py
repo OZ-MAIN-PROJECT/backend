@@ -161,12 +161,11 @@ def get_wallet_daily(user, date) :
 
 
         for wallet in wallets :
-
             result_map[
-                ㅔwallet.date.strftime("%Y-%m-%d") if isinstance(wallet.date, (date, datetime)) else wallet.date
-            ].append(
-                    wallet_to_dict(wallet)
-            )
+                wallet.date.strftime("%Y-%m-%d")
+                if isinstance(wallet.date, (date, datetime))
+                else wallet.date
+            ].append(wallet_to_dict(wallet))
 
         return {"entries": result_map}
     except Exception as e:
