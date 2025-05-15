@@ -92,6 +92,18 @@ class DuplicateCheckView(APIView):
 class MyPageView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        user = request.user
+        written_count = Community.objects.filter(user=user).count()
+        liked_count = Community.objects.filter(likes__user=user).count()
+
+        return Response({
+            "nickname": user.nickname,
+            "email": user.email,
+            "written_count": written_count,
+            "liked_count": liked_count,
+        })
+
     def put(self, request):
         user = request.user
         data = request.data
