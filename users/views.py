@@ -3,57 +3,23 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from rest_framework.permissions import IsAuthenticated
-from users.models import User
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import permission_classes
 from django.contrib.auth.hashers import make_password
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from users.models import User
-from rest_framework.permissions import AllowAny
-
-
-class DuplicateCheckView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        email = request.query_params.get('email')
-        nickname = request.query_params.get('nickname')
-
-        if email and User.objects.filter(email=email).exists():
-            return Response({"email": "이미 사용 중인 이메일입니다."}, status=status.HTTP_200_OK)
-
-        if nickname and User.objects.filter(nickname=nickname).exists():
-            return Response({"nickname": "이미 사용 중인 닉네임입니다."}, status=status.HTTP_200_OK)
-
-        return Response({"message": "사용 가능한 이메일 및 닉네임입니다."}, status=status.HTTP_200_OK)
-
+from .models import User
+from .serializers import SignupSerializer, UserSerializer, ChangePasswordSerializer
+from community.serializers import CommunitySerializer
+from community.models import Community
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        data = request.data
-        email = data.get("email")
-        nickname = data.get("nickname")
-
-        try:
-            user = User.objects.create(
-                email=email,
-                name=data["name"],
-                nickname=nickname,
-                question=data["question"],
-                answer=data["answer"],
-                password=make_password(data["password"]),
-                role=data.get("role", "user"),
-            )
+        serializer = SignupSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
             return Response({"message": "회원가입 성공"}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):
@@ -73,8 +39,8 @@ class LoginView(APIView):
                 'nickname': user.nickname,
                 'role': user.role,
             })
-        else:
-            return Response({'error': '로그인 실패'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': '로그인 실패'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,6 +53,7 @@ class LogoutView(APIView):
             return Response({"message": "로그아웃 완료"}, status=status.HTTP_205_RESET_CONTENT)
         except TokenError:
             return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class PasswordResetVerifyView(APIView):
     permission_classes = [AllowAny]
@@ -105,30 +72,85 @@ class PasswordResetVerifyView(APIView):
         except User.DoesNotExist:
             return Response({"error": "해당 이메일의 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-class MyPageView(APIView):
-    permission_classes = [IsAuthenticated]
+
+class DuplicateCheckView(APIView):
+    permission_classes = [AllowAny]
 
     def get(self, request):
-        user = request.user
-        return Response({
-            "user_id": user.user_id,
-            "email": user.email,
-            "name": user.name,
-            "nickname": user.nickname,
-            "role": user.role,
-            "created_at": user.created_at,
-        }, status=status.HTTP_200_OK)
+        email = request.query_params.get('email')
+        nickname = request.query_params.get('nickname')
+
+        if email and User.objects.filter(email=email).exists():
+            return Response({"email": "이미 사용 중인 이메일입니다."}, status=status.HTTP_200_OK)
+
+        if nickname and User.objects.filter(nickname=nickname).exists():
+            return Response({"nickname": "이미 사용 중인 닉네임입니다."}, status=status.HTTP_200_OK)
+
+        return Response({"message": "사용 가능한 이메일 및 닉네임입니다."}, status=status.HTTP_200_OK)
+
+
+class MyPageView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def put(self, request):
         user = request.user
         data = request.data
 
-        user.name = data.get("name", user.name)
-        user.nickname = data.get("nickname", user.nickname)
-        user.save()
+        if 'nickname' in data:
+            if User.objects.filter(nickname=data['nickname']).exclude(pk=user.pk).exists():
+                return Response({"error": "이미 사용 중인 닉네임입니다."}, status=400)
+            user.nickname = data['nickname']
 
-        return Response({"message": "회원정보 수정 완료"}, status=status.HTTP_200_OK)
+        if 'email' in data:
+            if User.objects.filter(email=data['email']).exclude(pk=user.pk).exists():
+                return Response({"error": "이미 사용 중인 이메일입니다."}, status=400)
+            user.email = data['email']
+
+        user.save()
+        return Response({"message": "회원정보 수정 완료"}, status=200)
 
     def delete(self, request):
         request.user.delete()
         return Response({"message": "회원 탈퇴 완료"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        user = request.user
+
+        if serializer.is_valid():
+            current_password = serializer.validated_data['current_password']
+            new_password = serializer.validated_data['new_password']
+
+            if not user.check_password(current_password):
+                return Response({"error": "현재 비밀번호가 일치하지 않습니다."}, status=400)
+
+            user.set_password(new_password)
+            user.save()
+            return Response({"message": "비밀번호가 변경되었습니다."}, status=200)
+
+        return Response(serializer.errors, status=400)
+
+class MyCommunityPageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        filter_type = request.query_params.get('filter')
+
+        if filter_type == 'liked':
+            posts = Community.objects.filter(likes__user=user).order_by('-created_at')
+        else:  # 기본은 내가 작성한 글
+            posts = Community.objects.filter(user=user).order_by('-created_at')
+
+        written_count = Community.objects.filter(user=user).count()
+        liked_count = Community.objects.filter(likes__user=user).count()
+
+        return Response({
+            'written_count': written_count,
+            'liked_count': liked_count,
+            'posts': CommunitySerializer(posts, many=True).data
+        })
