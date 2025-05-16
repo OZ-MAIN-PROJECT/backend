@@ -15,18 +15,25 @@ class UserSerializer(serializers.ModelSerializer):
 class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'name', 'nickname', 'question', 'answer', 'password']
+        fields = ['email', 'name', 'nickname', 'question', 'answer', 'password', 'is_superuser', 'is_staff']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
+        is_superuser = validated_data.get('is_superuser', False)
+        is_staff = validated_data.get('is_staff', False)
+        role = 'admin' if is_superuser or is_staff else 'user'
+
         user = User(
             email=validated_data['email'],
             name=validated_data['name'],
             nickname=validated_data['nickname'],
             question=validated_data['question'],
             answer=validated_data['answer'],
+            is_superuser=is_superuser,
+            is_staff=is_staff,
+            role=role,
         )
         user.set_password(validated_data['password'])
         user.save()
