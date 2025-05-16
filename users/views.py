@@ -122,6 +122,10 @@ class MyPageView(APIView):
         return Response({"message": "회원정보 수정 완료"}, status=200)
 
     def delete(self, request):
+        password = request.data.get("password")
+        if not request.user.check_password(password):
+            return Response({"error": "비밀번호가 일치하지 않습니다."}, status=400)
+
         request.user.delete()
         return Response({"message": "회원 탈퇴 완료"}, status=status.HTTP_204_NO_CONTENT)
 
