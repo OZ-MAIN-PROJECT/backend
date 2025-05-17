@@ -15,9 +15,6 @@ class WalletListCreateView(APIView):
 
 
     def post(self, request):
-
-
-
         serializer = WalletCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

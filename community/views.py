@@ -3,7 +3,7 @@ import math
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from common.pagination import CustomPageNumberPagination
+from common.pagination import paginate_queryset
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -62,7 +62,7 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
 class CommunityListCreateView(ListModelMixin, CreateModelMixin, GenericViewSet):
     queryset = Community.objects.all().order_by('-created_at')
     serializer_class = CommunitySerializer
-    pagination_class = CustomPageNumberPagination
+    pagination_class = paginate_queryset
     parser_classes = [MultiPartParser, FormParser]
 
     def get_permissions(self):
