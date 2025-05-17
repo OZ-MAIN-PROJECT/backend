@@ -5,7 +5,7 @@ from users.models import User
 
 # 공지사항 게시글
 class Notice(models.Model):
-    notice_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')  # 관리자
     title = models.CharField(max_length=100)
     content = models.TextField()
@@ -16,6 +16,7 @@ class Notice(models.Model):
 
     class Meta:
         db_table = 'notice'
+        ordering = ['-id']
 
     def __str__(self):
         return self.title

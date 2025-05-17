@@ -1,30 +1,41 @@
 from rest_framework import serializers
 from .models import Notice, NoticeLike, NoticeView
-from users.models import User
+
 
 
 # 공지사항 조회 (목록, 상세) 
+from rest_framework import serializers
+from notice.models import Notice, NoticeView
+
 class NoticeSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
-    view_count = serializers.SerializerMethodField()  # 조회수 필드 (조회수는 NoticeView에서 계산)
+    notice_id = serializers.IntegerField(source='id')
+    user_id = serializers.UUIDField(source='user.user_id', read_only=True)
+    likes = serializers.IntegerField(source='like_count', read_only=True)
+    views = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Notice
         fields = [
             'notice_id',
-            'user',
+            'user_id',
             'title',
             'content',
-            'like_count',
-            'view_count',
+            'likes',
+            'views',
+            'is_liked',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['notice_id', 'user', 'like_count', 'view_count', 'created_at', 'updated_at']
+        read_only_fields = fields
 
-    # 조회수 필드 처리 메서드 (SerializerMethodField용)
-    def get_view_count(self, obj):
+    def get_views(self, obj):
         return NoticeView.objects.filter(notice=obj).count()
+
+    def get_is_liked(self, obj):
+        user = self.context['request'].user
+        return NoticeLike.objects.filter(user=user, notice=obj).exists()
+
 
 
 # 공지사항 등록/수정

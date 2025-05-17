@@ -160,10 +160,10 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-
+    # 기존 Renderer를 대체
     #오류 json 파싱
     'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+        'common.renderers.CamelCaseJSONRenderer',
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
@@ -175,6 +175,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+
+    # 페이지네이션 설정
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomCursorPagination',
+    'PAGE_SIZE': 10,
+
 }
 
 SWAGGER_SETTINGS = {
@@ -191,3 +196,18 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',
     'USER_ID_CLAIM': 'user_id',
 }
+#
+# LOGGING = {
+#     'version': 1,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#         },
+#     },
+# }
