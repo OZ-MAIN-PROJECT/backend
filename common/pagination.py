@@ -5,7 +5,7 @@ from django.utils.encoding import force_str
 
 
 class CustomCursorPagination(BasePagination):
-    page_size = 5
+    page_size = 10
     cursor_query_param = 'cursor'
     ordering = '-id'
 
