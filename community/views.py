@@ -94,12 +94,14 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
+        print("🔧 PATCH 호출됨")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         response = super().update(request, *args, **kwargs)
         return Response(CommunitySerializer(self.get_object(), context={"request": request}).data)
 
     def destroy(self, request, *args, **kwargs):
+        print("🧨 DELETE 호출됨")
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
