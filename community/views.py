@@ -1,10 +1,14 @@
+import math
+
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status, viewsets
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from common.pagination import CustomPageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 
-from common.pagination import CustomCursorPagination
 from .models import Community, CommunityLike, CommunityView
 from .serializers import (
     CommunitySerializer,
@@ -20,16 +24,6 @@ class IsAdminForNoticeType(permissions.BasePermission):
             if type_ == 'NOTICE':
                 return request.user and request.user.is_staff
         return True
-
-# 로그인 유저만 커뮤니티 목록 조회 가능
-class CommunityListView(generics.ListAPIView):
-    queryset = Community.objects.all().order_by('-id')
-    serializer_class = CommunitySerializer
-    permission_classes = [permissions.IsAuthenticated]
-    pagination_class = CustomCursorPagination
-
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
 
 # 로그인 유저만 상세 조회 가능 (조회수 기록 포함)
@@ -65,11 +59,28 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 # 커뮤니티 글 등록
-class CommunityCreateView(generics.CreateAPIView):
-    queryset = Community.objects.all()
-    serializer_class = CommunityCreateUpdateSerializer
-    permission_classes = [IsAdminForNoticeType]
+class CommunityListCreateView(ListModelMixin, CreateModelMixin, GenericViewSet):
+    queryset = Community.objects.all().order_by('-created_at')
+    serializer_class = CommunitySerializer
+    pagination_class = CustomPageNumberPagination
     parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAdminForNoticeType()]
+        return [permissions.IsAuthenticated()]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CommunityCreateUpdateSerializer
+        return CommunitySerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        post_type = self.request.query_params.get('type')
+        if post_type:
+            queryset = queryset.filter(type=post_type)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
