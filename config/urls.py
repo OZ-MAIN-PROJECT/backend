@@ -31,7 +31,7 @@ urlpatterns = [
     # 각 앱 API 연결
     path('api/users/', include('users.urls')),
     path('api/wallet/', include('wallet.urls')),
-    path('api/wallet/statistic/', include('statistic.urls')),
+    path('api/wallet/statistics/', include('statistic.urls')),
     path('api/community/', include('community.urls')),
     path('api/notice/', include('notice.urls')),
 
