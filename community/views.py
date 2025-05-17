@@ -3,6 +3,8 @@ import math
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.permissions import BasePermission
+
 from common.pagination import CustomPageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
@@ -17,46 +19,20 @@ from .serializers import (
     CommunityViewSerializer
 )
 
-class IsAdminForNoticeType(permissions.BasePermission):
+class IsAdminForNoticeType(BasePermission):
     def has_permission(self, request, view):
-        if request.method == 'POST':
+        if request.method in ['POST', 'PATCH', 'PUT']:
+            # PATCH 시에는 body에 type이 없을 수 있으므로 fallback
             type_ = request.data.get('type')
+            if not type_ and hasattr(view, 'get_object'):
+                try:
+                    type_ = view.get_object().type
+                except:
+                    pass
+
             if type_ == 'NOTICE':
-                return request.user and request.user.is_staff
+                return request.user.is_staff or request.user.role == 'ADMIN'
         return True
-
-
-# 로그인 유저만 상세 조회 가능 (조회수 기록 포함)
-class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Community.objects.all()
-    serializer_class = CommunitySerializer
-    lookup_field = 'community_uuid'
-    parser_classes = [MultiPartParser, FormParser]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.request.method in ['PATCH', 'PUT']:
-            return CommunityCreateUpdateSerializer
-        return CommunitySerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-
-        # 로그인 유저일 경우 조회수 기록 (중복 방지)
-        CommunityView.objects.get_or_create(user=request.user, community=instance)
-
-        serializer = self.get_serializer(instance, context={"request": request})
-        return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
-        return Response(CommunitySerializer(self.get_object(), context={"request": request}).data)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 # 커뮤니티 글 등록
 class CommunityListCreateView(ListModelMixin, CreateModelMixin, GenericViewSet):
@@ -90,6 +66,44 @@ class CommunityListCreateView(ListModelMixin, CreateModelMixin, GenericViewSet):
         # 등록 후 CommunitySerializer로 응답
         response_serializer = CommunitySerializer(community, context={"request": request})
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+# 로그인 유저만 상세 조회 가능 (조회수 기록 포함)
+class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
+    lookup_field = 'community_uuid'
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.request.method in ['PATCH', 'PUT']:
+            return [IsAdminForNoticeType()]
+        return [permissions.IsAuthenticated()]
+
+    def get_serializer_class(self):
+        if self.request.method in ['PATCH', 'PUT']:
+            return CommunityCreateUpdateSerializer
+        return CommunitySerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # 로그인 유저일 경우 조회수 기록 (중복 방지)
+        CommunityView.objects.get_or_create(user=request.user, community=instance)
+
+        serializer = self.get_serializer(instance, context={"request": request})
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response = super().update(request, *args, **kwargs)
+        return Response(CommunitySerializer(self.get_object(), context={"request": request}).data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 

@@ -74,11 +74,9 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
         return community
 
     def update(self, instance, validated_data):
-        print("업데이트 데이터:", validated_data)
 
         image_url = validated_data.pop('image', None)
 
-        print("남은 데이터:", validated_data)
         community = super().update(instance, validated_data)
 
         if image_url:
