@@ -49,11 +49,11 @@ INSTALLED_APPS = [
     'corsheaders',
 
 #주석
-    'accounts',
     'users',
     'wallet',
     'statistic',
     'community',
+    'common'
 ]
 
 MIDDLEWARE = [
@@ -176,7 +176,7 @@ REST_FRAMEWORK = {
     ),
 
     # 페이지네이션 설정
-    'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomCursorPagination',
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomPageNumberPagination',
     'PAGE_SIZE': 10,
 
 }
