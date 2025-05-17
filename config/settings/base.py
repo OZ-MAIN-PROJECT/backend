@@ -49,11 +49,11 @@ INSTALLED_APPS = [
     'corsheaders',
 
 #주석
-    'accounts',
     'users',
     'wallet',
     'statistic',
     'community',
+    'common'
 ]
 
 MIDDLEWARE = [

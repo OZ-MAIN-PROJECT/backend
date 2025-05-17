@@ -12,17 +12,17 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='MonthlyStatistic',
+            name='Image',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('total_expense', models.IntegerField()),
-                ('total_income', models.IntegerField()),
-                ('year', models.IntegerField()),
-                ('month', models.IntegerField()),
+                ('ref_type', models.CharField(choices=[('EMOTION', '감정 소통'), ('QUESTION', '질문'), ('NOTICE', '공지 사항')], max_length=20)),
+                ('ref_id', models.IntegerField(db_column='ref_id')),
+                ('url', models.URLField()),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'monthly_statistic',
+                'db_table': 'image',
             },
         ),
     ]

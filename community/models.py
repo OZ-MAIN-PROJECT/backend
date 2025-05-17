@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 from users.models import User
@@ -11,6 +13,7 @@ class CommunityType(models.TextChoices):
 
 class Community(models.Model):
     id = models.AutoField(primary_key=True)
+    community_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     type = models.CharField(max_length=20, choices=CommunityType.choices)
     title = models.CharField(max_length=255)
@@ -41,7 +44,7 @@ class CommunityLike(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'communityLike'
+        db_table = 'community_like'
         constraints = [
             models.UniqueConstraint(fields=['user', 'community'], name='unique_user_community_like')
         ]
@@ -58,7 +61,7 @@ class CommunityView(models.Model):
     viewed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'communityView'
+        db_table = 'community_view'
         constraints = [
             models.UniqueConstraint(fields=['user', 'community'], name='unique_user_community_view')
         ]
