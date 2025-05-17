@@ -6,6 +6,7 @@ from users.models import User
 class CommunityType(models.TextChoices):
     EMOTION = 'EMOTION', '감정 소통'
     QUESTION = 'QUESTION', '질문'
+    NOTICE = 'NOTICE', '공지 사항'
 
 
 class Community(models.Model):
@@ -14,6 +15,7 @@ class Community(models.Model):
     type = models.CharField(max_length=20, choices=CommunityType.choices)
     title = models.CharField(max_length=255)
     content = models.TextField()
+    likes = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -24,6 +26,45 @@ class Community(models.Model):
 
     class Meta:
         db_table = 'community'
+        ordering = ['-id']
+
+
+# 커뮤니티 좋아요
+class CommunityLike(models.Model):
+    like_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
+    community = models.ForeignKey(
+        Community,
+        on_delete=models.CASCADE,
+        related_name='community_likes'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'communityLike'
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'community'], name='unique_user_community_like')
+        ]
+
+    def __str__(self):
+        return f"{self.user} likes community {self.community}"
+
+
+# 커뮤니티 조회수
+class CommunityView(models.Model):
+    view_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,db_column='user_id')
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='views')
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'communityView'
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'community'], name='unique_user_community_view')
+        ]
+
+    def __str__(self):
+        return f"{self.user} viewed community {self.community}"
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -37,7 +78,7 @@ class Comment(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='comments',
-        db_column='user_id'
+            db_column='user_id'
     )
     content = models.TextField()
 
