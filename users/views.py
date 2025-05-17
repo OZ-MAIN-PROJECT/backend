@@ -95,7 +95,7 @@ class MyPageView(APIView):
     def get(self, request):
         user = request.user
         written_count = Community.objects.filter(user=user).count()
-        liked_count = Community.objects.filter(likes__user=user).count()
+        liked_count = Community.objects.filter(user=user).count()
 
         return Response({
             "nickname": user.nickname,
@@ -158,7 +158,8 @@ class MyCommunityPageView(APIView):
         filter_type = request.query_params.get('filter')
 
         if filter_type == 'liked':
-            posts = Community.objects.filter(likes__user=user).order_by('-created_at')
+            if filter_type == 'liked':
+                posts = Community.objects.filter(community_likes__user=user).order_by('-created_at')
         else:  # 기본은 내가 작성한 글
             posts = Community.objects.filter(user=user).order_by('-created_at')
 
