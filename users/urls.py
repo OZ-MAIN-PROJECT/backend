@@ -15,6 +15,8 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('find-password/', PasswordResetVerifyView.as_view(), name='password_verify'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset_password'),
+
 
 
     path('mypage/', MyPageView.as_view(), name='mypage'),  # 유저 정보 수정 및 탈퇴
