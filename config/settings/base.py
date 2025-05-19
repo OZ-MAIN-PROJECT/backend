@@ -32,7 +32,19 @@ if dsn:
         send_default_pii=True    # 사용자 IP 등 기본 정보 포함
     )
 
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
 
+# 이 부분이 핵심!
+AWS_S3_CUSTOM_DOMAIN = os.getenv('CLOUDFRONT_DOMAIN')
+
+# 파일 업로드 설정
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+MEDIAFILES_LOCATION = ''
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -41,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
 
     'rest_framework',
     'rest_framework_simplejwt',
@@ -197,18 +210,3 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',
     'USER_ID_CLAIM': 'user_id',
 }
-#
-# LOGGING = {
-#     'version': 1,
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         'django.db.backends': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#         },
-#     },
-# }
