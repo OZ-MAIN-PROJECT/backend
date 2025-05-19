@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from .models import User
-from .serializers import SignupSerializer, UserSerializer, ChangePasswordSerializer
+from .serializers import SignupSerializer, UserSerializer, ChangePasswordSerializer, ResetPasswordSerializer
 from community.serializers import CommunitySerializer
 from community.models import Community
 
@@ -72,6 +72,24 @@ class PasswordResetVerifyView(APIView):
         except User.DoesNotExist:
             return Response({"error": "해당 이메일의 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            new_password = serializer.validated_data['new_password']
+
+            try:
+                user = User.objects.get(email=email)
+                user.set_password(new_password)
+                user.save()
+                return Response({"message": "비밀번호가 재설정되었습니다."}, status=200)
+            except User.DoesNotExist:
+                return Response({"error": "해당 이메일의 사용자가 존재하지 않습니다."}, status=404)
+
+        return Response(serializer.errors, status=400)
 
 class DuplicateCheckView(APIView):
     permission_classes = [AllowAny]
