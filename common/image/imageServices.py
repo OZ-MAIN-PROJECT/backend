@@ -1,3 +1,4 @@
+import uuid
 from urllib.parse import urlparse, unquote
 
 import boto3
@@ -12,17 +13,22 @@ def upload_image(user, image_file, ref_type: str, ref_id: int) -> Image:
     S3에 이미지 저장 후 URL 추출해서 Image 모델 저장
     """
     # 경로 지정: community/EMOTION/1/파일명.jpg
-    path = f"community/{ref_type}/{ref_id}/{image_file.name}"
+    filename = f"{uuid.uuid4().hex}_{image_file.name}"
+    path = f"community/{ref_type}/{ref_id}/{filename}"
     saved_path = default_storage.save(path, image_file)
     url = default_storage.url(saved_path)
 
     # 3. DB 저장
-    return Image.objects.create(
-        user=user,
+    # image만 받고 뒤에 오는 두 번째 값(즉 created)은 필요 없으니까 _로 버리는 것이에요
+    image, _ = Image.objects.update_or_create(
         ref_type=ref_type,
         ref_id=ref_id,
-        url=url
+        defaults={
+            'user': user,
+            'url': url
+        }
     )
+    return image
 
 def delete_image_from_s3(file_url):
     """

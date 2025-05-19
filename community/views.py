@@ -4,13 +4,14 @@ from venv import logger
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, APIException, ValidationError
 from rest_framework.permissions import BasePermission
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.image.imageServices import delete_image_from_s3
+from common import image
+from common.image.imageServices import delete_image_from_s3, upload_image
 from common.image.models import Image
 from common.pagination import CustomPageNumberPagination
 from .models import Community, CommunityLike, CommunityView, Comment
@@ -101,6 +102,27 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
+
+        image_file = request.FILES.get('image')
+
+        if image_file:
+            images = Image.objects.filter(ref_type=instance.type, ref_id=instance.id)
+
+            for image in images:
+                try:
+                    delete_image_from_s3(image.url)
+                except Exception as e:
+                    raise ValidationError(f"S3 삭제 실패: {image.url}, 에러: {str(e)}")
+            images.delete()
+
+            upload_image(
+                user=request.user,
+                image_file=image_file,
+                ref_type=instance.type,
+                ref_id=instance.id,
+            )
+
         return Response(CommunitySerializer(instance, context={"request": request}).data)
 
     # 삭제 요청 처리
@@ -117,7 +139,7 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
             try:
                 delete_image_from_s3(image.url)
             except Exception as e:
-                logger.warning(f"S3 삭제 실패 - URL: {image.url}, 에러: {e}")
+                raise ValidationError(f"S3 삭제 실패: {image.url}, 에러: {str(e)}")
 
         # DB에서 이미지 레코드 삭제
         images.delete()

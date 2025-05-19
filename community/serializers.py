@@ -75,18 +75,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
         return community
 
     def update(self, instance, validated_data):
-
-        image_url = validated_data.pop('image', None)
-
         community = super().update(instance, validated_data)
-
-        if image_url:
-            Image.objects.update_or_create(
-                ref_type=community.type,
-                ref_id=community.id,
-                defaults={'url': image_url}
-            )
-
         return community
 
 
