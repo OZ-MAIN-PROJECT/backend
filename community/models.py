@@ -84,7 +84,7 @@ class Comment(models.Model):
     content = models.TextField()
 
     # parent가 None이면 최상위 댓글, 있으면 그 댓글의 대댓글
-    parentCommentId = models.ForeignKey(
+    parent_comment_id = models.ForeignKey(
         'self',
         null=True,
         blank=True,
