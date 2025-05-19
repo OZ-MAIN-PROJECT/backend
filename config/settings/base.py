@@ -66,7 +66,8 @@ INSTALLED_APPS = [
     'wallet',
     'statistic',
     'community',
-    'common'
+    'common',
+    'common.image',
 ]
 
 MIDDLEWARE = [

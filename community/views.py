@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.image.imageServices import upload_image
 from common.pagination import CustomPageNumberPagination
 from .models import Community, CommunityLike, CommunityView, Comment
 from .serializers import (
@@ -62,7 +63,18 @@ class CommunityListCreateView(generics.ListCreateAPIView):
 
     # 유저 정보를 저장할 수 있게 수정
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        # 1. 게시글 먼저 저장
+        community = serializer.save(user=self.request.user)
+
+        # 2. 이미지가 같이 들어왔는지 확인
+        image_file = self.request.FILES.get('image')
+        if image_file:
+            upload_image(
+                user=self.request.user,
+                image_file=image_file,
+                ref_type=community.type,  # ref_type = Community.type (예: QUESTION, EMOTION)
+                ref_id=community.id       # ref_id = 새로 생성된 게시글의 ID
+            )
 
 
 # 게시글 상세 조회, 게시글 수정/삭제

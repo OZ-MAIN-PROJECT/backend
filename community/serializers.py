@@ -51,23 +51,24 @@ class CommunitySerializer(serializers.ModelSerializer):
 
 # 커뮤니티 등록/수정
 class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.URLField(write_only=True, required=False)
-
+    image = serializers.ImageField(write_only=True, required=False)
 
     class Meta:
         model = Community
         fields = ['title', 'content', 'type', 'image', 'community_uuid']
 
     def create(self, validated_data):
-        image_url = validated_data.pop('image', None)
+        image_file = validated_data.pop('image', None)
         community = super().create(validated_data)
 
-        if image_url:
-            Image.objects.create(
+        if image_file:
+            # S3에 저장 후 URL 자동 반환
+            from common.image.imageServices import upload_image
+            upload_image(
+                user=self.context['request'].user,
+                image_file=image_file,
                 ref_type=community.type,
-                ref_id=community.id,
-                url=image_url,  # ✅ DB엔 'url' 필드에 저장
-                user=self.context['request'].user
+                ref_id=community.id
             )
 
         return community

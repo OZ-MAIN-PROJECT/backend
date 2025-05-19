@@ -13,7 +13,7 @@ class Image(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     ref_type = models.CharField(max_length=20, choices=RefType.choices)
     ref_id = models.IntegerField(db_column='ref_id')
-    url = models.URLField()
+    url = models.URLField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
