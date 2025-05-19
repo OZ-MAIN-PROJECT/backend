@@ -61,14 +61,15 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
         image_file = validated_data.pop('image', None)
         community = super().create(validated_data)
 
+        # 2. 이미지가 같이 들어왔는지 확인
         if image_file:
             # S3에 저장 후 URL 자동 반환
             from common.image.imageServices import upload_image
             upload_image(
                 user=self.context['request'].user,
                 image_file=image_file,
-                ref_type=community.type,
-                ref_id=community.id
+                ref_type=community.type, # ref_type = Community.type (예: QUESTION, EMOTION)
+                ref_id=community.id # ref_id = 새로 생성된 게시글의 ID
             )
 
         return community
