@@ -1,13 +1,11 @@
 import math
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
-from rest_framework import generics, permissions, status
 from rest_framework.permissions import BasePermission
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.pagination import CustomPageNumberPagination
 from common.pagination import CustomPageNumberPagination
 from .models import Community, CommunityLike, CommunityView
 from .serializers import (
@@ -22,7 +20,6 @@ from .serializers import (
 class IsAdminForNoticeType(BasePermission):
     def has_permission(self, request, view):
         if request.method in ['POST', 'PATCH', 'PUT']:
-            # PATCH 시에는 body에 type이 없을 수 있으므로 fallback 처리
             # PATCH 시에는 body에 type이 없을 수 있으므로 fallback 처리
             type_ = request.data.get('type')
             if not type_ and hasattr(view, 'get_object'):
@@ -44,12 +41,10 @@ class CommunityListCreateView(generics.ListCreateAPIView):
     # POST 요청일 경우에는 공지 권한 검사
     def get_permissions(self):
         if self.request.method == 'POST':
-        if self.request.method == 'POST':
             return [IsAdminForNoticeType()]
         return [permissions.IsAuthenticated()]
     
     def get_serializer_class(self):
-        if self.request.method == 'POST':
         if self.request.method == 'POST':
             return CommunityCreateUpdateSerializer
         return CommunitySerializer
