@@ -1,18 +1,21 @@
 import math
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from common.pagination import CustomPageNumberPagination
-from .models import Community, CommunityLike, CommunityView
+from .models import Community, CommunityLike, CommunityView, Comment
 from .serializers import (
     CommunitySerializer,
     CommunityCreateUpdateSerializer,
     CommunityLikeSerializer,
-    CommunityViewSerializer
+    CommunityViewSerializer,
+    CommentCreateUpdateSerializer,
+    CommentReplySerializer
 )
 
 
@@ -65,7 +68,6 @@ class CommunityListCreateView(generics.ListCreateAPIView):
 # 게시글 상세 조회, 게시글 수정/삭제
 class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Community.objects.all()
-    lookup_field = 'community_uuid'  # 🔄 uuid 기반으로 조회
     lookup_field = 'community_uuid'  # 🔄 uuid 기반으로 조회
     parser_classes = [MultiPartParser, FormParser]
 
@@ -138,3 +140,60 @@ class CommunityLikeToggleView(APIView):
         community.likes = CommunityLike.objects.filter(community=community).count()
         community.save()
         return Response({"detail": "좋아요 취소", "like_count": community.likes, "is_liked": False}, status=status.HTTP_200_OK)
+    
+
+# 댓글/대댓글 조회 및 등록
+class CommentListCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    # 댓글/대댓글 전체 조회
+    def get(self, request, community_uuid):
+        community = get_object_or_404(Community, community_uuid=community_uuid)
+
+        # 최상위 댓글만 조회 (parent_comment_id가 null인 댓글)
+        top_comments = Comment.objects.filter(
+            community=community,
+            parent_comment_id__isnull=True
+        ).select_related('user').prefetch_related('replies__user').order_by('created_at')
+
+        serializer = CommentReplySerializer(top_comments, many=True)
+        return Response({
+            "community_uuid": str(community.community_uuid),
+            "comment_replies": serializer.data
+        })
+    # 댓글/대댓글 등록
+    def post(self, request, community_uuid):
+        community = get_object_or_404(Community, community_uuid=community_uuid)
+        serializer = CommentCreateUpdateSerializer(
+            data=request.data,
+            context={'request': request, 'community': community}
+        )
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.save()
+        return Response(CommentReplySerializer(comment).data, status=status.HTTP_201_CREATED)
+
+
+# 댓글/대댓글 수정 및 삭제
+class CommentDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    # 작성자 본인 확인
+    def get_object(self, comment_id, user):
+        comment = get_object_or_404(Comment, id=comment_id)
+        if comment.user != user:
+            raise PermissionDenied("본인의 댓글만 수정/삭제할 수 있습니다.")
+        return comment
+
+    # 댓글/대댓글 수정
+    def patch(self, request, community_uuid, comment_id):
+        comment = self.get_object(comment_id, request.user)
+        serializer = CommentCreateUpdateSerializer(comment, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_comment = serializer.save()
+        return Response(CommentReplySerializer(updated_comment).data)
+
+    # 댓글/대댓글 삭제
+    def delete(self, request, community_uuid, comment_id):
+        comment = self.get_object(comment_id, request.user)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
