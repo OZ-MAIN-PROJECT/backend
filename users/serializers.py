@@ -53,10 +53,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
     new_password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
 
-    def validate(self, data):
-        if data['new_password'] != data['confirm_password']:
-            raise serializers.ValidationError("비밀번호가 일치하지 않습니다.")
-        validate_password(data['new_password'])
-        return data
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value

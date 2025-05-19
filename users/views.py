@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -168,24 +169,31 @@ class ChangePasswordView(APIView):
 
         return Response(serializer.errors, status=400)
 
+class MyCommunityPagination(PageNumberPagination):
+    page_size = 10
+
+    def get_paginated_response(self, data):
+        return Response({
+            'results': data,
+            'page': self.page.number,
+            'size': self.page.paginator.per_page,
+            'totalPages': self.page.paginator.num_pages,
+            'totalElements': self.page.paginator.count
+        })
+
 class MyCommunityPageView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
         filter_type = request.query_params.get('filter')
+        paginator = MyCommunityPagination()
 
         if filter_type == 'liked':
-            if filter_type == 'liked':
-                posts = Community.objects.filter(community_likes__user=user).order_by('-created_at')
-        else:  # 기본은 내가 작성한 글
+            posts = Community.objects.filter(community_likes__user=user).order_by('-created_at')
+        else:
             posts = Community.objects.filter(user=user).order_by('-created_at')
 
-        written_count = Community.objects.filter(user=user).count()
-        liked_count = Community.objects.filter(likes__user=user).count()
-
-        return Response({
-            'written_count': written_count,
-            'liked_count': liked_count,
-            'posts': CommunitySerializer(posts, many=True).data
-        })
+        result_page = paginator.paginate_queryset(posts, request)
+        serialized = CommunitySerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serialized.data)
