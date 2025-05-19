@@ -56,7 +56,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Community
-        fields = ['title', 'content', 'type', 'image']
+        fields = ['title', 'content', 'type', 'image', 'community_uuid']
 
     def create(self, validated_data):
         image_url = validated_data.pop('image', None)
