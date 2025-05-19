@@ -91,22 +91,15 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     # 게시글 수정
     def update(self, request, *args, **kwargs):
-        print("🔧 PATCH 호출됨")
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(CommunitySerializer(instance, context={"request": request}).data)
-        self.perform_update(serializer)
-        return Response(CommunitySerializer(instance, context={"request": request}).data)
 
     # 삭제 요청 처리
     def destroy(self, request, *args, **kwargs):
-        print("🧨 DELETE 호출됨")
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -146,6 +139,8 @@ class CommunityLikeToggleView(APIView):
 class CommentListCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+
+
     # 댓글/대댓글 전체 조회
     def get(self, request, community_uuid):
         community = get_object_or_404(Community, community_uuid=community_uuid)
@@ -169,6 +164,8 @@ class CommentListCreateView(APIView):
             context={'request': request, 'community': community}
         )
         serializer.is_valid(raise_exception=True)
+
+        print(serializer.validated_data)
         comment = serializer.save()
         return Response(CommentReplySerializer(comment).data, status=status.HTTP_201_CREATED)
 
