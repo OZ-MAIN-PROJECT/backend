@@ -1,18 +1,20 @@
-from django.core.files.storage import default_storage
+from urllib.parse import urlparse, unquote
 
-from .models import Image  # 실제 Image 모델 경로에 맞게 수정
-from django.core.files.uploadedfile import UploadedFile
+import boto3
+from django.core.files.storage import default_storage
+from django.conf import settings
+
+from .models import Image
 
 
 def upload_image(user, image_file, ref_type: str, ref_id: int) -> Image:
     """
     S3에 이미지 저장 후 URL 추출해서 Image 모델 저장
     """
-    # 1. S3에 저장
-    file_path = default_storage.save(image_file.name, image_file)
-
-    # 2. URL 생성
-    url = default_storage.url(file_path)
+    # 경로 지정: community/EMOTION/1/파일명.jpg
+    path = f"community/{ref_type}/{ref_id}/{image_file.name}"
+    saved_path = default_storage.save(path, image_file)
+    url = default_storage.url(saved_path)
 
     # 3. DB 저장
     return Image.objects.create(
@@ -21,3 +23,19 @@ def upload_image(user, image_file, ref_type: str, ref_id: int) -> Image:
         ref_id=ref_id,
         url=url
     )
+
+def delete_image_from_s3(file_url):
+    """
+    S3 전체 URL에서 key 추출 후 삭제
+    예: https://bucket.s3.amazonaws.com/community/EMOTION/1/file.jpg → key: community/EMOTION/1/file.jpg
+    """
+    s3 = boto3.client('s3')
+    bucket = settings.AWS_STORAGE_BUCKET_NAME  # ✅ 올바르게 가져옴
+
+    parsed_url = urlparse(file_url)
+    raw_key = parsed_url.path.lstrip('/')
+    key = unquote(raw_key)
+
+    print(f"Deleting from bucket={bucket}, key={key}")  # ✅ 이제 문자열 출력됨
+
+    s3.delete_object(Bucket=bucket, Key=key)

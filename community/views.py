@@ -1,4 +1,7 @@
-import math
+import logging
+from venv import logger
+
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied
@@ -7,7 +10,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.image.imageServices import upload_image
+from common.image.imageServices import delete_image_from_s3
+from common.image.models import Image
 from common.pagination import CustomPageNumberPagination
 from .models import Community, CommunityLike, CommunityView, Comment
 from .serializers import (
@@ -100,10 +104,26 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(CommunitySerializer(instance, context={"request": request}).data)
 
     # 삭제 요청 처리
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        ref_type = instance.type
+        ref_id = instance.id
+
+        # 해당 게시글과 연결된 이미지들 조회
+        images = Image.objects.filter(ref_type=ref_type, ref_id=ref_id)
+
+        # 이미지 URL 기반 S3 삭제
+        for image in images:
+            try:
+                delete_image_from_s3(image.url)
+            except Exception as e:
+                logger.warning(f"S3 삭제 실패 - URL: {image.url}, 에러: {e}")
+
+        # DB에서 이미지 레코드 삭제
+        images.delete()
+
+        # 게시글 삭제
+        instance.delete()
 
 
 # 좋아요 등록/취소
