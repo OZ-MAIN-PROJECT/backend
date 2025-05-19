@@ -16,7 +16,8 @@ from .serializers import (
     CommunitySerializer,
     CommunityCreateUpdateSerializer,
     CommunityLikeSerializer,
-    CommunityViewSerializer
+    CommunityViewSerializer,
+    CommentSerializer,
 )
 
 class IsAdminForNoticeType(BasePermission):
@@ -137,3 +138,36 @@ class CommunityLikeToggleView(APIView):
         community.likes = CommunityLike.objects.filter(community=community).count()
         community.save()
         return Response({"detail": "좋아요 취소", "like_count": community.likes, "is_liked": False}, status=status.HTTP_200_OK)
+
+class CommentListCreateView(ListModelMixin, CreateModelMixin, GenericViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # 단일 커뮤니티 UUID 로 필터링, 최상위 댓글만
+        uuid = self.kwargs['community_uuid']
+        return Comment.objects.filter(
+            community__community_uuid=uuid,
+            parent__isnull=True
+        ).order_by('created_at')
+
+    def perform_create(self, serializer):
+        # URL 에서 community UUID 를 읽어서 FK에 할당
+        community = get_object_or_404(Community, community_uuid=self.kwargs['community_uuid'])
+        serializer.save(user=self.request.user, community=community)
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # community UUID + comment PK 로 안전하게 조회
+        uuid = self.kwargs['community_uuid']
+        cid = self.kwargs['id']
+        return get_object_or_404(
+            Comment,
+            pk=cid,
+            community__community_uuid=uuid
+        )
+

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from common.image.models import Image
-from community.models import Community, CommunityLike, CommunityView
+from community.models import Community, CommunityLike, CommunityView, Comment
 
 
 # 커뮤니티 조회 (목록, 상세)
@@ -109,3 +109,34 @@ class CommunityViewSerializer(serializers.ModelSerializer):
         model = CommunityView
         fields = ['view_id', 'user', 'community', 'viewed_at']
         read_only_fields = ['view_id', 'user', 'community', 'viewed_at']
+
+class CommentSerializer(serializers.ModelSerializer):
+    # 작성자는 CurrentUserDefault 와 perform_create 에서 자동 세팅
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+    # 어느 게시글에 속한 댓글인지
+    community = serializers.PrimaryKeyRelatedField(
+        queryset=Community.objects.all()
+    )
+    # parentCommentId 가 None 이면 최상위 댓글, 있으면 대댓글
+    parentCommentId = serializers.PrimaryKeyRelatedField(
+        queryset=Comment.objects.all(),
+        allow_null=True,
+        required=False
+    )
+
+    class Meta:
+        model = Comment
+        fields = [
+            'id',
+            'community',
+            'user',
+            'parentCommentId',
+            'content',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'deleted_at']
