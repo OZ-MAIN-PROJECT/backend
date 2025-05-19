@@ -51,40 +51,31 @@ class CommunitySerializer(serializers.ModelSerializer):
 
 # 커뮤니티 등록/수정
 class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.URLField(write_only=True, required=False)
-
+    image = serializers.ImageField(write_only=True, required=False)
 
     class Meta:
         model = Community
         fields = ['title', 'content', 'type', 'image', 'community_uuid']
 
     def create(self, validated_data):
-        image_url = validated_data.pop('image', None)
+        image_file = validated_data.pop('image', None)
         community = super().create(validated_data)
 
-        if image_url:
-            Image.objects.create(
-                ref_type=community.type,
-                ref_id=community.id,
-                url=image_url,  # ✅ DB엔 'url' 필드에 저장
-                user=self.context['request'].user
+        # 2. 이미지가 같이 들어왔는지 확인
+        if image_file:
+            # S3에 저장 후 URL 자동 반환
+            from common.image.imageServices import upload_image
+            upload_image(
+                user=self.context['request'].user,
+                image_file=image_file,
+                ref_type=community.type, # ref_type = Community.type (예: QUESTION, EMOTION)
+                ref_id=community.id # ref_id = 새로 생성된 게시글의 ID
             )
 
         return community
 
     def update(self, instance, validated_data):
-
-        image_url = validated_data.pop('image', None)
-
         community = super().update(instance, validated_data)
-
-        if image_url:
-            Image.objects.update_or_create(
-                ref_type=community.type,
-                ref_id=community.id,
-                defaults={'url': image_url}
-            )
-
         return community
 
 
