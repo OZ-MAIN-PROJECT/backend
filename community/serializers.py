@@ -1,7 +1,6 @@
 from rest_framework import serializers
-
 from common.image.models import Image
-from community.models import Community, CommunityLike, CommunityView
+from community.models import Community, CommunityLike, CommunityView, Comment
 
 
 # 커뮤니티 조회 (목록, 상세)
@@ -57,7 +56,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Community
-        fields = ['title', 'content', 'type', 'image']
+        fields = ['title', 'content', 'type', 'image', 'community_uuid']
 
     def create(self, validated_data):
         image_url = validated_data.pop('image', None)
@@ -109,3 +108,64 @@ class CommunityViewSerializer(serializers.ModelSerializer):
         model = CommunityView
         fields = ['view_id', 'user', 'community', 'viewed_at']
         read_only_fields = ['view_id', 'user', 'community', 'viewed_at']
+
+
+# 댓글/대댓글 조회
+class CommentReplySerializer(serializers.ModelSerializer):
+    comment_id = serializers.IntegerField(source='id')
+    parent_comment_id = serializers.SerializerMethodField()
+    nickname = serializers.CharField(source='user.nickname')
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField()
+    deleted_at = serializers.DateTimeField(allow_null=True)
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = [
+            'comment_id',
+            'parent_comment_id',
+            'nickname',
+            'content',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'children'
+        ]
+
+    def get_parent_comment_id(self, obj):
+        return obj.parent_comment_id.id if obj.parent_comment_id else None
+
+    def get_children(self, obj):
+        replies = obj.replies.all().order_by('created_at')
+        return CommentReplySerializer(replies, many=True).data
+
+
+# 댓글/대댓글 등록 및 수정
+class CommentCreateUpdateSerializer(serializers.ModelSerializer):
+    parent_comment_id = serializers.PrimaryKeyRelatedField(
+        queryset=Comment.objects.all(),
+        required=False,
+        allow_null=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = ['content', 'parent_comment_id']
+
+    def validate_parent_comment_id(self, value):
+        if value and value.parent_comment_id:
+            raise serializers.ValidationError("대댓글에는 대댓글을 달 수 없습니다.")  # 1-depth 제한
+        return value
+
+    def create(self, validated_data):
+        return Comment.objects.create(
+            user=self.context['request'].user,
+            community=self.context['community'],
+            **validated_data
+        )
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data.get('content', instance.content)
+        instance.save()
+        return instance
