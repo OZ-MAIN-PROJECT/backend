@@ -8,6 +8,7 @@ from .views import (
     MyPageView,
     ChangePasswordView,
     MyCommunityPageView,
+    ResetPasswordView,
 )
 
 urlpatterns = [
