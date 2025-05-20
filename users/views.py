@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 from .models import User
 from .serializers import SignupSerializer, UserSerializer, ChangePasswordSerializer, ResetPasswordSerializer
 from community.serializers import CommunitySerializer
-from community.models import Community
+from community.models import Community, CommunityLike
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
@@ -114,7 +114,7 @@ class MyPageView(APIView):
     def get(self, request):
         user = request.user
         written_count = Community.objects.filter(user=user).count()
-        liked_count = Community.objects.filter(user=user).count()
+        liked_count = CommunityLike.objects.filter(user=user).count()
 
         return Response({
             "nickname": user.nickname,
