@@ -98,6 +98,8 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
     # 게시글 수정
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
+        instance = self.get_object()  # 🔴 instance 정의
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         image_file = request.FILES.get('image')
@@ -211,6 +213,7 @@ class CommentListCreateView(APIView):
 
         print(serializer.validated_data)
         comment = serializer.save()
+        comment.refresh_from_db()  # parent_comment_id 정보 최신화
         return Response(CommentReplySerializer(comment).data, status=status.HTTP_201_CREATED)
 
 
