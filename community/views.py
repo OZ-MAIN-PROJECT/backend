@@ -7,6 +7,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied, APIException, ValidationError
 from rest_framework.permissions import BasePermission
 from rest_framework.parsers import MultiPartParser, FormParser
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -179,6 +180,7 @@ class CommunityLikeToggleView(APIView):
 # 댓글/대댓글 조회 및 등록
 class CommentListCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [CamelCaseJSONParser, MultiPartParser, FormParser]
 
 
 
