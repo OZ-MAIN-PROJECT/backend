@@ -134,9 +134,6 @@ class CommentReplySerializer(serializers.ModelSerializer):
 
 # 댓글/대댓글 등록 및 수정
 class CommentCreateUpdateSerializer(serializers.ModelSerializer):
-    
-    # 프론트에서 camelCase로 보낼 경우 처리
-    parentCommentId = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     parent_comment_id = serializers.PrimaryKeyRelatedField(
         queryset=Comment.objects.all(),
@@ -146,7 +143,7 @@ class CommentCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['content', 'parentCommentId', 'parent_comment_id']
+        fields = ['content', 'parent_comment_id']
 
     def validate(self, attrs):
         parent_comment_id = attrs.get('parent_comment_id')
@@ -157,9 +154,9 @@ class CommentCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # parentCommentId → parent_comment_id 수동 매핑
-        parent_comment_id = validated_data.pop('parentCommentId', None)
-        if parent_comment_id:
-            validated_data['parent_comment_id'] = Comment.objects.get(id=parent_comment_id)
+        # parent_comment_id = validated_data.pop('parentCommentId', None)
+        # if parent_comment_id:
+        #     validated_data['parent_comment_id'] = Comment.objects.get(id=parent_comment_id)
 
         return Comment.objects.create(
             user=self.context['request'].user,
