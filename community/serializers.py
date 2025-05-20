@@ -143,6 +143,10 @@ class CommentReplySerializer(serializers.ModelSerializer):
 
 # 댓글/대댓글 등록 및 수정
 class CommentCreateUpdateSerializer(serializers.ModelSerializer):
+    
+    # 프론트에서 camelCase로 보낼 경우 처리
+    parentCommentId = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+
     parent_comment_id = serializers.PrimaryKeyRelatedField(
         queryset=Comment.objects.all(),
         required=False,
@@ -151,21 +155,23 @@ class CommentCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['content', 'parent_comment_id']
+        fields = ['content', 'parentCommentId', 'parent_comment_id']
 
-    def validate_parent_comment_id(self, value):
-        if value and value.parent_comment_id:
-            raise serializers.ValidationError("대댓글에는 대댓글을 달 수 없습니다.")  # 1-depth 제한
-        return value
+    def validate(self, attrs):
+        parent_comment_id = attrs.get('parent_comment_id')
+
+        if parent_comment_id and parent_comment_id.parent_comment_id:
+            raise serializers.ValidationError("대댓글에는 대댓글을 달 수 없습니다.")
+        return attrs
 
     def create(self, validated_data):
+        # parentCommentId → parent_comment_id 수동 매핑
+        parent_comment_id = validated_data.pop('parentCommentId', None)
+        if parent_comment_id:
+            validated_data['parent_comment_id'] = Comment.objects.get(id=parent_comment_id)
+
         return Comment.objects.create(
             user=self.context['request'].user,
             community=self.context['community'],
             **validated_data
         )
-
-    def update(self, instance, validated_data):
-        instance.content = validated_data.get('content', instance.content)
-        instance.save()
-        return instance

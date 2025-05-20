@@ -96,13 +96,10 @@ class CommunityDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(CommunitySerializer(instance, context={"request": request}).data)
         self.perform_update(serializer)
-        return Response(CommunitySerializer(instance, context={"request": request}).data)
 
     # 삭제 요청 처리
     def destroy(self, request, *args, **kwargs):
@@ -118,7 +115,7 @@ class CommunityLikeToggleView(APIView):
 
     # 좋아요 등록 (중복 방지)
     def post(self, request, community_uuid):
-        community = get_object_or_404(Community, community_uuid=community_uuid)  # 🔄 pk → uuid
+        community = get_object_or_404(Community, community_uuid=community_uuid)
         like, created = CommunityLike.objects.get_or_create(user=request.user, community=community)
 
         if not created:
@@ -164,6 +161,11 @@ class CommentListCreateView(APIView):
     # 댓글/대댓글 등록
     def post(self, request, community_uuid):
         community = get_object_or_404(Community, community_uuid=community_uuid)
+
+        # 공지사항 댓글 작성 차단
+        if community.type == 'NOTICE':
+            raise PermissionDenied("공지사항에는 댓글을 작성할 수 없습니다.")
+
         serializer = CommentCreateUpdateSerializer(
             data=request.data,
             context={'request': request, 'community': community}
@@ -171,6 +173,7 @@ class CommentListCreateView(APIView):
         serializer.is_valid(raise_exception=True)
         comment = serializer.save()
         return Response(CommentReplySerializer(comment).data, status=status.HTTP_201_CREATED)
+
 
 
 # 댓글/대댓글 수정 및 삭제
