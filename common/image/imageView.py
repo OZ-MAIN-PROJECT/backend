@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from common.image.imageServices import upload_image
-from models import RefType
+from .models import RefType
+
 
 
 class ImageUploadView(APIView):

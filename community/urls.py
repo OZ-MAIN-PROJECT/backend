@@ -1,4 +1,7 @@
 from django.urls import path
+
+from common.image.imageView import ImageUploadView
+
 from .views import (
     CommunityListCreateView,
     CommunityDetailView,
@@ -22,4 +25,6 @@ urlpatterns = [
 
     # 댓글/대댓글 수정 및 삭제
     path('<uuid:community_uuid>/comment/<int:comment_id>/', CommentDetailView.as_view(), name='comment-detail'),
+
+    path('image/', ImageUploadView.as_view(), name='image-upload'),
 ]
